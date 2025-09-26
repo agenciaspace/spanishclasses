@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Principito - Libro Interactivo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      line-height: 1.8;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+      box-shadow: 0 0 50px rgba(0,0,0,0.3);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+
+    .audio-controls {
+      background: #f8f9fa;
+      padding: 20px;
+      border-bottom: 2px solid #e9ecef;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    #audioPlayer {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .controls-help {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .toc {
+      background: #f8f9fa;
+      padding: 20px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .toc h2 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 1.3em;
+    }
+
+    .toc ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .toc li {
+      background: white;
+      border-radius: 20px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .toc a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .toc a:hover {
+      color: #764ba2;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .chapter {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .chapter:last-child {
+      border-bottom: none;
+    }
+
+    .chapter h2 {
+      color: #667eea;
+      font-size: 1.8em;
+      margin-bottom: 25px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f8f9fa;
+    }
+
+    .line {
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+
+    .line:hover {
+      background: #f8f9fa;
+    }
+
+    .line.highlight {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+      border-left: 4px solid #ffc107;
+      transform: translateX(5px);
+      box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+    }
+
+    .word {
+      border-bottom: 1px dotted #667eea;
+      cursor: help;
+      position: relative;
+      padding: 2px;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .word:hover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+
+    .translation-popup {
+      position: absolute;
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 0.9em;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      max-width: 200px;
+      word-wrap: break-word;
+      display: none;
+    }
+
+    .translation-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border: 5px solid transparent;
+      border-top-color: #333;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #e9ecef;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1001;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 0;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+      
+      .header h1 {
+        font-size: 2em;
+      }
+      
+      .content {
+        padding: 20px;
+      }
+      
+      .toc ul {
+        flex-direction: column;
+      }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>📖 El Principito</h1>
+      <p>Antoine de Saint-Exupéry</p>
+    </div>
+
+    <div class="audio-controls">
+      <audio id="audioPlayer" controls preload="metadata">
+        <source src="/audio/el-principito.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+      </audio>
+      <div class="controls-help">
+        Usa las teclas ← → para navegar • Espacio para pausar/reproducir • Clica en el texto para ir a ese momento
+      </div>
+    </div>
+
+    <div class="toc">
+      <h2>📑 Sumário</h2>
+      <ul id="tocList">
+        <!-- TOC será gerado dinamicamente -->
+      </ul>
+    </div>
+
+    <div class="content" id="bookContent">
+      <div class="loading">Cargando el libro...</div>
+    </div>
+  </div>
+
+  <script>
+    class ElPrincipitoInteractive {
+      constructor() {
+        this.audio = document.getElementById('audioPlayer');
+        this.content = document.getElementById('bookContent');
+        this.tocList = document.getElementById('tocList');
+        this.progressFill = document.getElementById('progressFill');
+        this.currentTranslationPopup = null;
+        
+        this.initializeAudio();
+        this.loadBookContent();
+        this.setupKeyboardControls();
+        this.setupSelectionTranslation();
+      }
+
+      initializeAudio() {
+        this.audio.addEventListener('timeupdate', () => {
+          this.updateProgress();
+          this.highlightCurrentLine();
+        });
+
+        this.audio.addEventListener('loadedmetadata', () => {
+          console.log('Audio loaded, duration:', this.audio.duration);
+        });
+      }
+
+      updateProgress() {
+        if (this.audio.duration) {
+          const progress = (this.audio.currentTime / this.audio.duration) * 100;
+          this.progressFill.style.width = progress + '%';
+        }
+      }
+
+      highlightCurrentLine() {
+        const lines = document.querySelectorAll('.line[data-start]');
+        const currentTime = this.audio.currentTime;
+        
+        lines.forEach(line => {
+          const start = parseFloat(line.dataset.start);
+          const end = parseFloat(line.dataset.end);
+          
+          if (currentTime >= start && currentTime <= end) {
+            line.classList.add('highlight');
+            line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            line.classList.remove('highlight');
+          }
+        });
+      }
+
+      setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+          switch(e.key) {
+            case ' ':
+              e.preventDefault();
+              if (this.audio.paused) {
+                this.audio.play();
+              } else {
+                this.audio.pause();
+              }
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              this.audio.currentTime = Math.max(0, this.audio.currentTime - 10);
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              this.audio.currentTime = Math.min(this.audio.duration, this.audio.currentTime + 10);
+              break;
+          }
+        });
+      }
+
+      setupSelectionTranslation() {
+        document.addEventListener('mouseup', async () => {
+          const selection = window.getSelection();
+          const selectedText = selection.toString().trim();
+          
+          if (selectedText && selectedText.length > 1) {
+            this.hideTranslationPopup();
+            await this.translateSelection(selectedText, selection);
+          }
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.translation-popup')) {
+            this.hideTranslationPopup();
+          }
+        });
+      }
+
+      async translateSelection(text, selection) {
+        try {
+          const response = await fetch('/translate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const translation = data.translations[0].text;
+          
+          this.showTranslationPopup(translation, selection);
+        } catch (error) {
+          console.error('Translation error:', error);
+          this.showTranslationPopup('Error en la traducción', selection);
+        }
+      }
+
+      showTranslationPopup(translation, selection) {
+        this.hideTranslationPopup();
+        
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        const popup = document.createElement('div');
+        popup.className = 'translation-popup';
+        popup.textContent = translation;
+        popup.style.display = 'block';
+        popup.style.left = (rect.left + window.scrollX + rect.width / 2) + 'px';
+        popup.style.top = (rect.top + window.scrollY - 40) + 'px';
+        popup.style.transform = 'translateX(-50%)';
+        
+        document.body.appendChild(popup);
+        this.currentTranslationPopup = popup;
+      }
+
+      hideTranslationPopup() {
+        if (this.currentTranslationPopup) {
+          this.currentTranslationPopup.remove();
+          this.currentTranslationPopup = null;
+        }
+      }
+
+      loadBookContent() {
+        // Por enquanto vamos criar o conteúdo manualmente
+        // Depois você pode usar o script Python para gerar automaticamente
+        this.createManualContent();
+      }
+
+      createManualContent() {
+        const chapters = [
+          {
+            id: 'capitulo_1',
+            title: 'Capítulo 1',
+            paragraphs: [
+              { text: 'Cuando yo tenía seis años vi una vez una magnífica lámina en un libro sobre la selva virgen que se llamaba "Historias vividas".', start: 0, end: 8 },
+              { text: 'Representaba una serpiente boa que se tragaba a una fiera.', start: 8, end: 14 },
+              { text: 'En el libro decía: "Las serpientes boas se tragan su presa entera, sin masticarla.', start: 14, end: 22 },
+              { text: 'Luego no pueden moverse y duermen durante los seis meses que dura su digestión".', start: 22, end: 30 }
+            ]
+          },
+          {
+            id: 'capitulo_2',
+            title: 'Capítulo 2',
+            paragraphs: [
+              { text: 'Así fue como me encontré viviendo solo, sin nadie con quien poder hablar verdaderamente, hasta que hace seis años tuve una avería en el desierto del Sahara.', start: 30, end: 42 },
+              { text: 'Algo se había roto en mi motor.', start: 42, end: 46 },
+              { text: 'Como no tenía conmigo ni mecánico ni pasajeros, me dispuse a realizar, yo solo, una reparación difícil.', start: 46, end: 56 }
+            ]
+          }
+        ];
+
+        // Generate TOC
+        let tocHTML = '';
+        chapters.forEach(chapter => {
+          tocHTML += `<li><a href="#${chapter.id}" onclick="app.scrollToChapter('${chapter.id}')">${chapter.title}</a></li>`;
+        });
+        this.tocList.innerHTML = tocHTML;
+
+        // Generate content
+        let contentHTML = '';
+        chapters.forEach(chapter => {
+          contentHTML += `
+            <div class="chapter" id="${chapter.id}">
+              <h2>${chapter.title}</h2>
+          `;
+          
+          chapter.paragraphs.forEach(para => {
+            contentHTML += `
+              <p class="line" data-start="${para.start}" data-end="${para.end}" onclick="app.seekToTime(${para.start})">
+                ${this.addWordTranslations(para.text)}
+              </p>
+            `;
+          });
+          
+          contentHTML += '</div>';
+        });
+
+        this.content.innerHTML = contentHTML;
+      }
+
+      addWordTranslations(text) {
+        // Palavras importantes com traduções em português
+        const translations = {
+          'serpiente': 'cobra',
+          'selva': 'selva/floresta',
+          'desierto': 'deserto',
+          'motor': 'motor',
+          'reparación': 'reparo/conserto',
+          'mecánico': 'mecânico',
+          'pasajeros': 'passageiros',
+          'avería': 'pane/defeito'
+        };
+
+        let result = text;
+        Object.keys(translations).forEach(word => {
+          const regex = new RegExp(`\\b${word}\\b`, 'gi');
+          result = result.replace(regex, `<span class="word" title="${translations[word]}">$&</span>`);
+        });
+
+        return result;
+      }
+
+      scrollToChapter(chapterId) {
+        const chapter = document.getElementById(chapterId);
+        if (chapter) {
+          chapter.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      seekToTime(time) {
+        this.audio.currentTime = time;
+        if (this.audio.paused) {
+          this.audio.play();
+        }
+      }
+    }
+
+    // Initialize the app
+    const app = new ElPrincipitoInteractive();
+  </script>
+</body>
+</html>
