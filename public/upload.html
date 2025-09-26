@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload de Audiolivros - Biblioteca Interativa</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      line-height: 1.8;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    /* Global Navigation */
+    .global-nav {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .nav-logo {
+      color: white;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-search {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 30px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 45px 12px 15px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      background: rgba(255,255,255,0.9);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .nav-link.active {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      min-height: 80vh;
+      box-shadow: 0 0 50px rgba(0,0,0,0.3);
+      margin-top: 20px;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+
+    .upload-section {
+      padding: 40px;
+    }
+
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 20px;
+      padding: 60px 40px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      margin-bottom: 30px;
+    }
+
+    .upload-area:hover {
+      background: #f8f9fa;
+      border-color: #764ba2;
+    }
+
+    .upload-area.dragover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+
+    .upload-icon {
+      font-size: 4em;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.3em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .upload-hint {
+      color: #999;
+      font-size: 0.9em;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn.secondary {
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+    }
+
+    .btn.secondary:hover {
+      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5);
+    }
+
+    .file-list {
+      margin-top: 30px;
+    }
+
+    .file-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file-info {
+      flex: 1;
+    }
+
+    .file-name {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .file-size {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .file-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-processing {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-complete {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .progress-bar {
+      width: 100px;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .nav-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .nav-search {
+        margin: 0;
+        max-width: 100%;
+        order: 2;
+      }
+      
+      .nav-links {
+        order: 3;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .container {
+        margin: 10px;
+        margin-top: 20px;
+      }
+      
+      .header {
+        padding: 30px 20px;
+      }
+      
+      .header h1 {
+        font-size: 2em;
+      }
+      
+      .upload-section {
+        padding: 20px;
+      }
+      
+      .upload-area {
+        padding: 40px 20px;
+      }
+      
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Global Navigation -->
+  <nav class="global-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        📚 Biblioteca Interativa
+      </a>
+      
+      <div class="nav-search">
+        <input type="text" class="search-input" placeholder="Buscar livros, autores..." id="globalSearch">
+        <button class="search-button" type="button">
+          🔍
+        </button>
+      </div>
+      
+      <div class="nav-links">
+        <a href="/" class="nav-link">📚 Biblioteca</a>
+        <a href="#" class="nav-link active">📤 Upload</a>
+        <a href="#" class="nav-link" onclick="showAdmin()">⚙️ Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header">
+      <h1>📤 Upload de Audiolivros</h1>
+      <p>Adicione novos audiolivros à sua biblioteca</p>
+    </div>
+
+    <div class="upload-section">
+      <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">🎧</div>
+        <div class="upload-text">Clique aqui ou arraste arquivos de áudio</div>
+        <div class="upload-hint">Formatos suportados: MP3, M4A, WAV (máx. 500MB)</div>
+      </div>
+      
+      <input type="file" id="fileInput" class="file-input" multiple accept=".mp3,.m4a,.wav" onchange="handleFiles(this.files)">
+      
+      <div style="text-align: center; margin-bottom: 30px;">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">
+          📁 Selecionar Arquivos
+        </button>
+        <button class="btn secondary" onclick="startProcessing()" id="processBtn" disabled>
+          🚀 Iniciar Processamento
+        </button>
+      </div>
+
+      <div class="file-list" id="fileList" style="display: none;">
+        <h3>Arquivos Selecionados</h3>
+        <div id="fileItems"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedFiles = [];
+    
+    // Setup drag and drop
+    const uploadArea = document.getElementById('uploadArea');
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    // Setup global search
+    document.getElementById('globalSearch').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const query = e.target.value.trim();
+        if (query) {
+          window.location.href = `/?search=${encodeURIComponent(query)}`;
+        }
+      }
+    });
+
+    function handleFiles(files) {
+      const fileList = document.getElementById('fileList');
+      const fileItems = document.getElementById('fileItems');
+      const processBtn = document.getElementById('processBtn');
+      
+      // Add files to selection
+      Array.from(files).forEach(file => {
+        if (file.type.startsWith('audio/') && file.size <= 500 * 1024 * 1024) {
+          selectedFiles.push({
+            file: file,
+            id: Date.now() + Math.random(),
+            status: 'pending'
+          });
+        }
+      });
+      
+      if (selectedFiles.length > 0) {
+        fileList.style.display = 'block';
+        processBtn.disabled = false;
+        renderFileList();
+      }
+    }
+
+    function renderFileList() {
+      const fileItems = document.getElementById('fileItems');
+      
+      fileItems.innerHTML = selectedFiles.map(item => `
+        <div class="file-item">
+          <div class="file-info">
+            <div class="file-name">${item.file.name}</div>
+            <div class="file-size">${formatFileSize(item.file.size)}</div>
+          </div>
+          <div class="file-status">
+            <span class="status-badge status-${item.status}">
+              ${getStatusText(item.status)}
+            </span>
+            ${item.status === 'processing' ? `
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
+              </div>
+            ` : ''}
+            <button onclick="removeFile('${item.id}')" class="btn secondary" style="padding: 5px 10px; font-size: 0.8em;">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function getStatusText(status) {
+      const statusMap = {
+        'pending': 'Aguardando',
+        'uploading': 'Enviando',
+        'processing': 'Processando',
+        'complete': 'Completo',
+        'error': 'Erro'
+      };
+      return statusMap[status] || status;
+    }
+
+    function removeFile(id) {
+      selectedFiles = selectedFiles.filter(item => item.id !== id);
+      if (selectedFiles.length === 0) {
+        document.getElementById('fileList').style.display = 'none';
+        document.getElementById('processBtn').disabled = true;
+      }
+      renderFileList();
+    }
+
+    async function startProcessing() {
+      if (selectedFiles.length === 0) return;
+      
+      const processBtn = document.getElementById('processBtn');
+      processBtn.disabled = true;
+      processBtn.textContent = '⏳ Processando...';
+      
+      for (let item of selectedFiles) {
+        if (item.status === 'pending') {
+          await processFile(item);
+        }
+      }
+      
+      processBtn.textContent = '✅ Processamento Completo';
+      
+      setTimeout(() => {
+        alert('Processamento concluído! Os livros foram adicionados à biblioteca.');
+        window.location.href = '/';
+      }, 2000);
+    }
+
+    async function processFile(item) {
+      try {
+        // Simulate upload
+        item.status = 'uploading';
+        renderFileList();
+        
+        // Simulate upload progress
+        for (let i = 0; i <= 100; i += 10) {
+          item.progress = i;
+          renderFileList();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Simulate processing
+        item.status = 'processing';
+        item.progress = 0;
+        renderFileList();
+        
+        // Simulate Whisper processing
+        for (let i = 0; i <= 100; i += 5) {
+          item.progress = i;
+          renderFileList();
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        item.status = 'complete';
+        renderFileList();
+        
+      } catch (error) {
+        item.status = 'error';
+        renderFileList();
+      }
+    }
+
+    function showAdmin() {
+      alert('Painel de administração será implementado em breve!');
+    }
+  </script>
+</body>
+</html>

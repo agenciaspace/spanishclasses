@@ -161,6 +161,15 @@
     .btn.secondary:hover {
       box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5);
     }
+
+    .btn.favorited {
+      background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+    }
+
+    .btn.favorited:hover {
+      box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
+    }
     
     .features {
       background: #f8f9fa;
@@ -208,7 +217,188 @@
       border-top: 1px solid #dee2e6;
     }
     
+    /* Global Navigation */
+    .global-nav {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .nav-logo {
+      color: white;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-search {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 30px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 45px 12px 15px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      background: rgba(255,255,255,0.9);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .nav-link.active {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Processing Indicator */
+    .processing-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,193,7,0.9);
+      color: #856404;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .processing-indicator.active {
+      display: flex;
+    }
+
+    .processing-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid transparent;
+      border-top: 2px solid #856404;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Quick Search Results */
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1001;
+      display: none;
+    }
+
+    .search-results.show {
+      display: block;
+    }
+
+    .search-result-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .search-result-item:hover {
+      background: #f8f9fa;
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .search-result-title {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .search-result-author {
+      color: #666;
+      font-size: 0.9em;
+    }
+
     @media (max-width: 768px) {
+      .nav-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .nav-search {
+        margin: 0;
+        max-width: 100%;
+        order: 2;
+      }
+      
+      .nav-links {
+        order: 3;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
       .header {
         padding: 30px 20px;
       }
@@ -233,6 +423,33 @@
   </style>
 </head>
 <body>
+  <!-- Global Navigation -->
+  <nav class="global-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        📚 Biblioteca Interativa
+      </a>
+      
+      <div class="nav-search">
+        <input type="text" class="search-input" placeholder="Buscar livros, autores..." id="globalSearch">
+        <button class="search-button" type="button">
+          🔍
+        </button>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      
+      <div class="nav-links">
+        <div class="processing-indicator" id="processingIndicator">
+          <div class="processing-spinner"></div>
+          <span>Processando...</span>
+        </div>
+        <a href="/" class="nav-link active">📚 Biblioteca</a>
+        <a href="#" class="nav-link" onclick="showFavorites()">⭐ Favoritos</a>
+        <a href="/upload.html" class="nav-link">📤 Upload</a>
+      </div>
+    </div>
+  </nav>
+
   <div class="container">
     <div class="header">
       <h1>📚 Biblioteca Interativa</h1>
@@ -284,7 +501,12 @@
     class BookManager {
       constructor() {
         this.booksGrid = document.getElementById('booksGrid');
+        this.books = [];
+        this.favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        this.searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
         this.loadAvailableBooks();
+        this.setupGlobalSearch();
+        this.checkProcessingStatus();
       }
 
       async loadAvailableBooks() {
@@ -292,6 +514,7 @@
           const response = await fetch('/api/books');
           if (response.ok) {
             const books = await response.json();
+            this.books = books;
             this.displayBooks(books);
           } else {
             this.displayDefaultBooks();
@@ -317,10 +540,118 @@
           }
         ];
         
+        this.books = books;
         this.displayBooks(books);
       }
 
+      // displayBooks method moved to global scope
+
+      formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+      }
+
+      setupGlobalSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        const searchResults = document.getElementById('searchResults');
+        
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.trim();
+          if (query.length > 1) {
+            this.performSearch(query);
+          } else {
+            searchResults.classList.remove('show');
+          }
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.nav-search')) {
+            searchResults.classList.remove('show');
+          }
+        });
+
+        // Handle Enter key
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = e.target.value.trim();
+            if (query) {
+              this.addToSearchHistory(query);
+              this.filterBooks(query);
+              searchResults.classList.remove('show');
+            }
+          }
+        });
+      }
+
+      performSearch(query) {
+        const searchResults = document.getElementById('searchResults');
+        const results = this.books.filter(book => 
+          book.title.toLowerCase().includes(query.toLowerCase()) ||
+          book.author.toLowerCase().includes(query.toLowerCase()) ||
+          (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
+        );
+
+        if (results.length > 0) {
+          searchResults.innerHTML = results.map(book => `
+            <div class="search-result-item" onclick="window.location.href='/book.html?book=${book.id}'">
+              <div class="search-result-title">${book.title}</div>
+              <div class="search-result-author">por ${book.author}</div>
+            </div>
+          `).join('');
+          searchResults.classList.add('show');
+        } else {
+          searchResults.innerHTML = '<div class="search-result-item">Nenhum livro encontrado</div>';
+          searchResults.classList.add('show');
+        }
+      }
+
+      addToSearchHistory(query) {
+        if (!this.searchHistory.includes(query)) {
+          this.searchHistory.unshift(query);
+          if (this.searchHistory.length > 10) {
+            this.searchHistory = this.searchHistory.slice(0, 10);
+          }
+          localStorage.setItem('searchHistory', JSON.stringify(this.searchHistory));
+        }
+      }
+
+      filterBooks(query) {
+        const filteredBooks = this.books.filter(book => 
+          book.title.toLowerCase().includes(query.toLowerCase()) ||
+          book.author.toLowerCase().includes(query.toLowerCase()) ||
+          (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
+        );
+        this.displayBooks(filteredBooks);
+      }
+
+      checkProcessingStatus() {
+        const indicator = document.getElementById('processingIndicator');
+        
+        // Check if there's any processing happening
+        fetch('/transcriptions/el-principito.json')
+          .then(response => {
+            if (!response.ok) {
+              // Still processing
+              indicator.classList.add('active');
+              // Check again in 10 seconds
+              setTimeout(() => this.checkProcessingStatus(), 10000);
+            } else {
+              indicator.classList.remove('active');
+            }
+          })
+          .catch(() => {
+            // Assume still processing
+            indicator.classList.add('active');
+            setTimeout(() => this.checkProcessingStatus(), 10000);
+          });
+      }
+
       displayBooks(books) {
+        this.books = books; // Store books for search
+        
         if (books.length === 0) {
           this.booksGrid.innerHTML = '<div class="loading">Nenhum livro disponível</div>';
           return;
@@ -356,16 +687,39 @@
             <div class="book-actions">
               <a href="/book.html?book=${book.id}" class="btn">📖 Ler Livro</a>
               <a href="/audio/${book.audioFile}" class="btn secondary" target="_blank">🎧 Só Áudio</a>
+              <button onclick="toggleFavorite('${book.id}')" class="btn ${this.favorites.includes(book.id) ? 'favorited' : 'secondary'}">
+                ${this.favorites.includes(book.id) ? '⭐' : '☆'} Favorito
+              </button>
             </div>
           </div>
         `).join('');
       }
+    }
 
-      formatDuration(seconds) {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    // Global functions
+    function toggleFavorite(bookId) {
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      const index = favorites.indexOf(bookId);
+      
+      if (index > -1) {
+        favorites.splice(index, 1);
+      } else {
+        favorites.push(bookId);
       }
+      
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+      bookManager.favorites = favorites;
+      bookManager.displayBooks(bookManager.books);
+    }
+
+    function showFavorites() {
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      const favoriteBooks = bookManager.books.filter(book => favorites.includes(book.id));
+      bookManager.displayBooks(favoriteBooks);
+    }
+
+    function showUpload() {
+      alert('Funcionalidade de upload será implementada em breve!');
     }
 
     // Initialize the book manager

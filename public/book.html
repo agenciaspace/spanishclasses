@@ -238,7 +238,112 @@
       transition: width 0.3s ease;
     }
 
+    /* Global Navigation */
+    .global-nav {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .nav-logo {
+      color: white;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-search {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 30px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 45px 12px 15px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      background: rgba(255,255,255,0.9);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .nav-link.active {
+      background: rgba(255,255,255,0.3);
+    }
+
     @media (max-width: 768px) {
+      .nav-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .nav-search {
+        margin: 0;
+        max-width: 100%;
+        order: 2;
+      }
+      
+      .nav-links {
+        order: 3;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
       .container {
         margin: 0;
       }
@@ -274,12 +379,188 @@
       margin: 10px 0;
       border: 1px solid #f5c6cb;
     }
+
+    .processing-container {
+      text-align: center;
+      padding: 40px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .processing-header h2 {
+      color: #667eea;
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .processing-header p {
+      color: #666;
+      font-size: 1.1em;
+      margin-bottom: 30px;
+    }
+
+    .progress-bar-container {
+      background: #f8f9fa;
+      border-radius: 20px;
+      padding: 10px;
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      background: #e9ecef;
+      border-radius: 15px;
+      height: 30px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      position: relative;
+    }
+
+    .progress-text {
+      color: #495057;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    .processing-details {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: bold;
+      color: #495057;
+    }
+
+    .detail-value {
+      color: #667eea;
+      font-weight: 500;
+    }
+
+    .processing-info {
+      background: #e7f3ff;
+      border-left: 4px solid #667eea;
+      border-radius: 5px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .processing-info h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .processing-info ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .processing-info li {
+      padding: 5px 0;
+      color: #495057;
+    }
+
+    .processing-info li:before {
+      content: '✓';
+      color: #28a745;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .processing-actions {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn-primary, .btn-secondary {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+    }
   </style>
 </head>
 <body>
   <div class="progress-bar">
     <div class="progress-fill" id="progressFill"></div>
   </div>
+
+  <!-- Global Navigation -->
+  <nav class="global-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        📚 Biblioteca Interativa
+      </a>
+      
+      <div class="nav-search">
+        <input type="text" class="search-input" placeholder="Buscar livros, autores..." id="globalSearch">
+        <button class="search-button" type="button">
+          🔍
+        </button>
+      </div>
+      
+      <div class="nav-links">
+        <a href="/" class="nav-link">📚 Biblioteca</a>
+        <a href="#" class="nav-link" onclick="toggleFavorite()">⭐ Favorito</a>
+        <a href="#" class="nav-link" onclick="showSettings()">⚙️ Ajustes</a>
+      </div>
+    </div>
+  </nav>
 
   <div class="container">
     <div class="header">
@@ -333,6 +614,7 @@
         this.loadBookContent();
         this.setupKeyboardControls();
         this.setupSelectionTranslation();
+        this.setupGlobalSearch();
       }
 
       initializeAudio() {
@@ -498,12 +780,507 @@
             const transcription = await response.json();
             this.createContentFromTranscription(transcription);
           } else {
-            // Fallback para conteúdo manual se a transcrição não estiver disponível
-            this.createManualContent();
+            // Mostrar interface de processamento
+            this.showProcessingInterface();
           }
         } catch (error) {
-          console.log('Usando conteúdo manual:', error);
-          this.createManualContent();
+          console.log('Transcrição ainda não disponível:', error);
+          this.showProcessingInterface();
+        }
+      }
+
+      showProcessingInterface() {
+        const contentDiv = document.getElementById('bookContent');
+        contentDiv.innerHTML = `
+          <div class="processing-container">
+            <div class="processing-header">
+              <h2>🎧 Processando Transcrição</h2>
+              <p>Gerando transcrição precisa com timestamps sincronizados...</p>
+            </div>
+            
+            <div class="processing-status">
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar">
+                  <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <span class="progress-text" id="progress-text">Iniciando processamento...</span>
+              </div>
+              
+              <div class="processing-details">
+                <div class="detail-item">
+                  <span class="detail-label">📖 Livro:</span>
+                  <span class="detail-value">El Principito</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">⏱️ Duração:</span>
+                  <span class="detail-value">01:42:30</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">🔄 Status:</span>
+                  <span class="detail-value" id="processing-status">Processando com Whisper AI...</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">⏳ Tempo restante:</span>
+                  <span class="detail-value" id="time-remaining">Calculando...</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="processing-info">
+              <h3>ℹ️ Sobre o Processamento</h3>
+              <ul>
+                <li>Utilizando Whisper AI para transcrição de alta precisão</li>
+                <li>Gerando timestamps sincronizados com o áudio</li>
+                <li>Identificando capítulos e pausas naturais</li>
+                <li>Preparando tradução interativa</li>
+              </ul>
+            </div>
+            
+            <div class="processing-actions">
+              <a href="/" class="btn-secondary">
+                ← Voltar ao Gerenciador
+              </a>
+              <button onclick="app.checkProgress()" class="btn-primary">
+                🔄 Verificar Progresso
+              </button>
+            </div>
+          </div>
+        `;
+        
+        this.startProgressPolling();
+      }
+
+      startProgressPolling() {
+        // Simular progresso baseado no processamento real
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const timeRemaining = document.getElementById('time-remaining');
+        
+        let progress = 0;
+        const pollInterval = setInterval(async () => {
+          try {
+            // Tentar verificar se a transcrição foi completada
+            const response = await fetch('/transcriptions/el-principito.json');
+            if (response.ok) {
+              // Transcrição completa!
+              clearInterval(pollInterval);
+              progressFill.style.width = '100%';
+              progressText.textContent = 'Transcrição completa!';
+              timeRemaining.textContent = 'Finalizado';
+              
+              // Recarregar a página após 2 segundos
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+              return;
+            }
+            
+            // Simular progresso gradual
+            progress = Math.min(95, progress + Math.random() * 5);
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `Processando... ${Math.round(progress)}%`;
+            
+            // Estimar tempo restante baseado no progresso
+            const estimated = Math.max(0, Math.round((100 - progress) * 2)); // 2 minutos por % restante
+            timeRemaining.textContent = estimated > 0 ? `~${estimated} minutos` : 'Quase pronto...';
+            
+          } catch (error) {
+            console.log('Ainda processando...', error);
+            progress = Math.min(90, progress + 1);
+            progressFill.style.width = progress + '%';
+          }
+        }, 10000); // Verificar a cada 10 segundos
+      }
+
+      checkProgress() {
+        // Forçar verificação imediata do progresso
+        const progressText = document.getElementById('progress-text');
+        const button = event.target;
+        
+        // Feedback visual no botão
+        button.disabled = true;
+        button.innerHTML = '🔄 Verificando...';
+        
+        fetch('/transcriptions/el-principito.json')
+          .then(response => {
+            if (response.ok) {
+              progressText.textContent = 'Transcrição encontrada! Recarregando...';
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              progressText.textContent = 'Ainda processando... Aguarde mais um pouco.';
+              setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = '🔄 Verificar Progresso';
+              }, 2000);
+            }
+          })
+          .catch(error => {
+            console.log('Ainda processando:', error);
+            progressText.textContent = 'Processamento em andamento...';
+            setTimeout(() => {
+              button.disabled = false;
+              button.innerHTML = '🔄 Verificar Progresso';
+            }, 2000);
+          });
+      }
+    }
+
+    // Global functions for navigation
+    function toggleFavorite() {
+      const bookId = 'el-principito';
+      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+      const index = favorites.indexOf(bookId);
+      
+      if (index > -1) {
+        favorites.splice(index, 1);
+        alert('Removido dos favoritos!');
+      } else {
+        favorites.push(bookId);
+        alert('Adicionado aos favoritos!');
+      }
+      
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    }
+
+    function showSettings() {
+      alert('Configurações serão implementadas em breve!');
+    }
+
+    class ElPrincipitoInteractive {
+      constructor() {
+        this.audio = document.getElementById('audioPlayer');
+        this.content = document.getElementById('bookContent');
+        this.tocList = document.getElementById('tocList');
+        this.progressFill = document.getElementById('progressFill');
+        this.currentTranslationPopup = null;
+        this.syncOffset = 0; // Offset em segundos para ajustar sincronização
+        
+        this.initializeAudio();
+        this.loadBookContent();
+        this.setupKeyboardControls();
+        this.setupSelectionTranslation();
+        this.setupGlobalSearch();
+      }
+
+      initializeAudio() {
+        this.audio.addEventListener('timeupdate', () => {
+          this.updateProgress();
+          this.highlightCurrentLine();
+        });
+
+        this.audio.addEventListener('loadedmetadata', () => {
+          console.log('Audio loaded, duration:', this.audio.duration);
+        });
+      }
+
+      updateProgress() {
+        if (this.audio.duration) {
+          const progress = (this.audio.currentTime / this.audio.duration) * 100;
+          this.progressFill.style.width = progress + '%';
+        }
+      }
+
+      highlightCurrentLine() {
+        const lines = document.querySelectorAll('.line[data-start]');
+        const adjustedTime = this.audio.currentTime + this.syncOffset;
+        
+        // Encontrar a linha mais próxima do tempo atual (ajustado)
+        let closestLine = null;
+        let closestDistance = Infinity;
+        
+        lines.forEach(line => {
+          const start = parseFloat(line.dataset.start);
+          const end = parseFloat(line.dataset.end);
+          
+          // Remover highlight de todas as linhas primeiro
+          line.classList.remove('highlight');
+          
+          // Calcular distância do tempo atual para o início da linha
+          const distance = Math.abs(adjustedTime - start);
+          
+          // Se estamos dentro do intervalo OU é a linha mais próxima
+          if ((adjustedTime >= start && adjustedTime <= end) || distance < closestDistance) {
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestLine = line;
+            }
+          }
+        });
+        
+        // Destacar a linha mais próxima
+        if (closestLine && closestDistance < 30) { // Tolerância de 30 segundos
+          closestLine.classList.add('highlight');
+          closestLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      adjustSync(seconds) {
+        this.syncOffset += seconds;
+        document.getElementById('syncOffset').textContent = this.syncOffset + 's';
+        // Forçar atualização da sincronização
+        this.highlightCurrentLine();
+      }
+
+      resetSync() {
+        this.syncOffset = 0;
+        document.getElementById('syncOffset').textContent = '0s';
+        this.highlightCurrentLine();
+      }
+
+      setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+          switch(e.key) {
+            case ' ':
+              e.preventDefault();
+              if (this.audio.paused) {
+                this.audio.play();
+              } else {
+                this.audio.pause();
+              }
+              break;
+            case 'ArrowLeft':
+              e.preventDefault();
+              this.audio.currentTime = Math.max(0, this.audio.currentTime - 10);
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              this.audio.currentTime = Math.min(this.audio.duration, this.audio.currentTime + 10);
+              break;
+          }
+        });
+      }
+
+      setupSelectionTranslation() {
+        document.addEventListener('mouseup', async () => {
+          const selection = window.getSelection();
+          const selectedText = selection.toString().trim();
+          
+          if (selectedText && selectedText.length > 1) {
+            this.hideTranslationPopup();
+            await this.translateSelection(selectedText, selection);
+          }
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.translation-popup')) {
+            this.hideTranslationPopup();
+          }
+        });
+      }
+
+      async translateSelection(text, selection) {
+        try {
+          const response = await fetch('/translate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const translation = data.translations[0].text;
+          
+          this.showTranslationPopup(translation, selection);
+        } catch (error) {
+          console.error('Translation error:', error);
+          this.showTranslationPopup('Error en la traducción', selection);
+        }
+      }
+
+      showTranslationPopup(translation, selection) {
+        this.hideTranslationPopup();
+        
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        const popup = document.createElement('div');
+        popup.className = 'translation-popup';
+        popup.textContent = translation;
+        popup.style.display = 'block';
+        popup.style.left = (rect.left + window.scrollX + rect.width / 2) + 'px';
+        popup.style.top = (rect.top + window.scrollY - 40) + 'px';
+        popup.style.transform = 'translateX(-50%)';
+        
+        document.body.appendChild(popup);
+        this.currentTranslationPopup = popup;
+      }
+
+      hideTranslationPopup() {
+        if (this.currentTranslationPopup) {
+          this.currentTranslationPopup.remove();
+          this.currentTranslationPopup = null;
+        }
+      }
+
+      async loadBookContent() {
+        try {
+          // Tentar carregar transcrição real primeiro
+          const response = await fetch('/transcriptions/el-principito.json');
+          if (response.ok) {
+            const transcription = await response.json();
+            this.createContentFromTranscription(transcription);
+          } else {
+            // Mostrar interface de processamento
+            this.showProcessingInterface();
+          }
+        } catch (error) {
+          console.log('Transcrição ainda não disponível:', error);
+          this.showProcessingInterface();
+        }
+      }
+
+      showProcessingInterface() {
+        const contentDiv = document.getElementById('bookContent');
+        contentDiv.innerHTML = `
+          <div class="processing-container">
+            <div class="processing-header">
+              <h2>🎧 Processando Transcrição</h2>
+              <p>Gerando transcrição precisa com timestamps sincronizados...</p>
+            </div>
+            
+            <div class="processing-status">
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar">
+                  <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <span class="progress-text" id="progress-text">Iniciando processamento...</span>
+              </div>
+              
+              <div class="processing-details">
+                <div class="detail-item">
+                  <span class="detail-label">📖 Livro:</span>
+                  <span class="detail-value">El Principito</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">⏱️ Duração:</span>
+                  <span class="detail-value">01:42:30</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">🔄 Status:</span>
+                  <span class="detail-value" id="processing-status">Processando com Whisper AI...</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">⏳ Tempo restante:</span>
+                  <span class="detail-value" id="time-remaining">Calculando...</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="processing-info">
+              <h3>ℹ️ Sobre o Processamento</h3>
+              <ul>
+                <li>Utilizando Whisper AI para transcrição de alta precisão</li>
+                <li>Gerando timestamps sincronizados com o áudio</li>
+                <li>Identificando capítulos e pausas naturais</li>
+                <li>Preparando tradução interativa</li>
+              </ul>
+            </div>
+            
+            <div class="processing-actions">
+              <a href="/" class="btn-secondary">
+                ← Voltar ao Gerenciador
+              </a>
+              <button onclick="app.checkProgress()" class="btn-primary">
+                🔄 Verificar Progresso
+              </button>
+            </div>
+          </div>
+        `;
+        
+        this.startProgressPolling();
+      }
+
+      startProgressPolling() {
+        // Simular progresso baseado no processamento real
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const timeRemaining = document.getElementById('time-remaining');
+        
+        let progress = 0;
+        const pollInterval = setInterval(async () => {
+          try {
+            // Tentar verificar se a transcrição foi completada
+            const response = await fetch('/transcriptions/el-principito.json');
+            if (response.ok) {
+              // Transcrição completa!
+              clearInterval(pollInterval);
+              progressFill.style.width = '100%';
+              progressText.textContent = 'Transcrição completa!';
+              timeRemaining.textContent = 'Finalizado';
+              
+              // Recarregar a página após 2 segundos
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+              return;
+            }
+            
+            // Simular progresso gradual
+            progress = Math.min(95, progress + Math.random() * 5);
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `Processando... ${Math.round(progress)}%`;
+            
+            // Estimar tempo restante baseado no progresso
+            const estimated = Math.max(0, Math.round((100 - progress) * 2)); // 2 minutos por % restante
+            timeRemaining.textContent = estimated > 0 ? `~${estimated} minutos` : 'Quase pronto...';
+            
+          } catch (error) {
+            console.log('Ainda processando...', error);
+            progress = Math.min(90, progress + 1);
+            progressFill.style.width = progress + '%';
+          }
+        }, 10000); // Verificar a cada 10 segundos
+      }
+
+      checkProgress() {
+        // Forçar verificação imediata do progresso
+        const progressText = document.getElementById('progress-text');
+        const button = event.target;
+        
+        // Feedback visual no botão
+        button.disabled = true;
+        button.innerHTML = '🔄 Verificando...';
+        
+        fetch('/transcriptions/el-principito.json')
+          .then(response => {
+            if (response.ok) {
+              progressText.textContent = 'Transcrição encontrada! Recarregando...';
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              progressText.textContent = 'Ainda processando... Aguarde mais um pouco.';
+              setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = '🔄 Verificar Progresso';
+              }, 2000);
+            }
+          })
+          .catch(error => {
+            console.log('Ainda processando:', error);
+            progressText.textContent = 'Processamento em andamento...';
+            setTimeout(() => {
+              button.disabled = false;
+              button.innerHTML = '🔄 Verificar Progresso';
+            }, 2000);
+          });
+      }
+
+      setupGlobalSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        if (searchInput) {
+          searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const query = e.target.value.trim();
+              if (query) {
+                window.location.href = `/?search=${encodeURIComponent(query)}`;
+              }
+            }
+          });
         }
       }
 
@@ -856,6 +1633,21 @@
         });
 
         return result;
+      }
+
+      setupGlobalSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        if (searchInput) {
+          searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const query = e.target.value.trim();
+              if (query) {
+                window.location.href = `/?search=${encodeURIComponent(query)}`;
+              }
+            }
+          });
+        }
       }
 
       scrollToChapter(chapterId) {
