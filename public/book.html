@@ -533,6 +533,118 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
     }
+
+    /* Timestamp and chapter styles */
+    .chapter-title {
+      color: #667eea;
+      margin: 30px 0 15px 0;
+      padding: 15px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border-left: 4px solid #667eea;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .chapter-title:hover {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+      transform: translateX(5px);
+    }
+
+    .paragraph {
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      border-left: 3px solid transparent;
+    }
+
+    .paragraph:hover {
+      background: rgba(102, 126, 234, 0.1);
+      border-left-color: #667eea;
+      transform: translateX(3px);
+    }
+
+    .paragraph.current-segment {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+      border-left-color: #667eea;
+      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    .timestamp {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .toc-time {
+      float: right;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    /* Translation popup */
+    .translation-popup {
+      position: absolute;
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 1000;
+      min-width: 300px;
+      max-width: 400px;
+    }
+
+    .translation-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 15px;
+      border-radius: 10px 10px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2em;
+      cursor: pointer;
+      padding: 0;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .translation-content {
+      padding: 15px;
+    }
+
+    .original-text {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 10px;
+      font-size: 0.9em;
+    }
+
+    .translated-text {
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -938,76 +1050,98 @@
 
       createContentFromTranscription(transcription) {
         const segments = transcription.segments;
-        const chapters = {};
+        const chapters = [];
         let currentChapter = null;
+        let chapterIndex = 0;
 
         // Agrupar segmentos por capítulos
-        segments.forEach(segment => {
-          if (segment.text.includes('Capítulo')) {
+        segments.forEach((segment, index) => {
+          const text = segment.text.trim();
+          
+          // Detectar início de capítulo
+          if (text.match(/Capítulo\s*\d+|capítulo\s*\d+/i) || 
+              (text.includes('Capítulo') && text.length < 50)) {
+            
             currentChapter = {
-              id: segment.text.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-              title: segment.text,
-              segments: []
+              id: `capitulo-${++chapterIndex}`,
+              title: text.replace(/^\s*/, '').trim() || `Capítulo ${chapterIndex}`,
+              startTime: segment.start,
+              segments: [segment]
             };
-            chapters[currentChapter.id] = currentChapter;
+            chapters.push(currentChapter);
           } else if (currentChapter) {
             currentChapter.segments.push(segment);
+          } else {
+            // Primeiro segmento antes de qualquer capítulo
+            currentChapter = {
+              id: 'prologo',
+              title: 'Prólogo',
+              startTime: segment.start,
+              segments: [segment]
+            };
+            chapters.push(currentChapter);
           }
         });
-
-        // Se não há capítulos definidos, criar capítulo único
-        if (Object.keys(chapters).length === 0) {
-          currentChapter = {
-            id: 'capitulo-unico',
-            title: 'El Principito',
-            segments: segments
-          };
-          chapters[currentChapter.id] = currentChapter;
-        }
 
         this.segments = segments;
         this.chapters = chapters;
         this.renderContent();
         this.renderTOC();
+        this.setupAudioSync();
       }
 
       renderContent() {
         const contentDiv = this.content;
         let html = '';
 
-        this.segments.forEach((segment, index) => {
-          html += `
-            <p class="paragraph" data-start="${segment.start}" data-end="${segment.end}" data-index="${index}">
-              ${segment.text.trim()}
-            </p>
-          `;
+        this.chapters.forEach(chapter => {
+          // Título do capítulo
+          if (chapter.title.includes('Capítulo')) {
+            html += `
+              <h2 class="chapter-title" data-start="${chapter.startTime}" onclick="app.jumpToTime(${chapter.startTime})">
+                📖 ${chapter.title}
+              </h2>
+            `;
+          }
+
+          // Segmentos do capítulo
+          chapter.segments.forEach((segment, index) => {
+            const text = segment.text.trim();
+            
+            // Pular título de capítulo duplicado
+            if (text.includes('Capítulo') && text.length < 50) {
+              return;
+            }
+
+            html += `
+              <p class="paragraph" 
+                 data-start="${segment.start}" 
+                 data-end="${segment.end}" 
+                 data-index="${index}"
+                 onclick="app.jumpToTime(${segment.start})"
+                 title="Clique para ir para ${this.formatTime(segment.start)}">
+                <span class="timestamp">${this.formatTime(segment.start)}</span>
+                ${text}
+              </p>
+            `;
+          });
         });
 
         contentDiv.innerHTML = html;
-
-        // Add click handlers for paragraphs
-        contentDiv.querySelectorAll('.paragraph').forEach(p => {
-          p.addEventListener('click', () => {
-            const start = parseFloat(p.dataset.start);
-            this.audio.currentTime = start + this.syncOffset;
-            if (this.audio.paused) {
-              this.audio.play();
-            }
-          });
-        });
+        this.addSelectionTranslation();
       }
 
       renderTOC() {
         if (!this.tocList) return;
 
         let html = '';
-        Object.values(this.chapters).forEach(chapter => {
-          const firstSegment = chapter.segments[0];
-          if (firstSegment) {
+        this.chapters.forEach(chapter => {
+          if (chapter.title.includes('Capítulo')) {
             html += `
               <li>
-                <a href="#" onclick="app.jumpToTime(${firstSegment.start}); return false;">
-                  ${chapter.title}
+                <a href="#" onclick="app.jumpToTime(${chapter.startTime}); return false;">
+                  📖 ${chapter.title}
+                  <span class="toc-time">${this.formatTime(chapter.startTime)}</span>
                 </a>
               </li>
             `;
@@ -1015,6 +1149,100 @@
         });
 
         this.tocList.innerHTML = html;
+      }
+
+      formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      setupAudioSync() {
+        this.audio.addEventListener('timeupdate', () => {
+          this.highlightCurrentSegment();
+          this.updateProgress();
+        });
+      }
+
+      highlightCurrentSegment() {
+        const currentTime = this.audio.currentTime - this.syncOffset;
+        const paragraphs = document.querySelectorAll('.paragraph');
+        
+        paragraphs.forEach(p => {
+          const start = parseFloat(p.dataset.start);
+          const end = parseFloat(p.dataset.end);
+          
+          if (currentTime >= start && currentTime <= end) {
+            p.classList.add('current-segment');
+            p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            p.classList.remove('current-segment');
+          }
+        });
+      }
+
+      addSelectionTranslation() {
+        document.addEventListener('mouseup', (e) => {
+          const selection = window.getSelection();
+          const selectedText = selection.toString().trim();
+          
+          if (selectedText && selectedText.length > 2) {
+            this.showTranslationPopup(selectedText, e.pageX, e.pageY);
+          }
+        });
+      }
+
+      async showTranslationPopup(text, x, y) {
+        // Remove popup anterior
+        this.removeTranslationPopup();
+
+        // Criar popup
+        const popup = document.createElement('div');
+        popup.className = 'translation-popup';
+        popup.style.left = x + 'px';
+        popup.style.top = (y - 60) + 'px';
+        popup.innerHTML = `
+          <div class="translation-header">
+            <span>🔄 Traduzindo...</span>
+            <button onclick="app.removeTranslationPopup()" class="close-btn">✕</button>
+          </div>
+          <div class="translation-content">Aguarde...</div>
+        `;
+        
+        document.body.appendChild(popup);
+        this.currentTranslationPopup = popup;
+
+        // Fazer tradução
+        try {
+          const response = await fetch('/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+          });
+
+          const data = await response.json();
+          const translation = data.translations?.[0]?.text || 'Tradução não disponível';
+          
+          popup.querySelector('.translation-header span').textContent = '🇺🇸 Tradução';
+          popup.querySelector('.translation-content').innerHTML = `
+            <div class="original-text">${text}</div>
+            <div class="translated-text">${translation}</div>
+          `;
+        } catch (error) {
+          popup.querySelector('.translation-content').textContent = 'Erro na tradução';
+        }
+      }
+
+      removeTranslationPopup() {
+        if (this.currentTranslationPopup) {
+          this.currentTranslationPopup.remove();
+          this.currentTranslationPopup = null;
+        }
       }
 
       jumpToTime(time) {
