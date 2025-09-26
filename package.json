@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node scripts/dev.js",
+    "stop": "lsof -ti:3000 | xargs kill -9 2>/dev/null || echo 'Port 3000 is free'"
   },
   "dependencies": {
     "axios": "^1.6.0",
