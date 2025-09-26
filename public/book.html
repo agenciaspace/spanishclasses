@@ -923,6 +923,106 @@
             }, 2000);
           });
       }
+
+      setupGlobalSearch() {
+        document.getElementById('globalSearch').addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = e.target.value.trim();
+            if (query) {
+              window.location.href = `/?search=${encodeURIComponent(query)}`;
+            }
+          }
+        });
+      }
+
+      createContentFromTranscription(transcription) {
+        const segments = transcription.segments;
+        const chapters = {};
+        let currentChapter = null;
+
+        // Agrupar segmentos por capítulos
+        segments.forEach(segment => {
+          if (segment.text.includes('Capítulo')) {
+            currentChapter = {
+              id: segment.text.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              title: segment.text,
+              segments: []
+            };
+            chapters[currentChapter.id] = currentChapter;
+          } else if (currentChapter) {
+            currentChapter.segments.push(segment);
+          }
+        });
+
+        // Se não há capítulos definidos, criar capítulo único
+        if (Object.keys(chapters).length === 0) {
+          currentChapter = {
+            id: 'capitulo-unico',
+            title: 'El Principito',
+            segments: segments
+          };
+          chapters[currentChapter.id] = currentChapter;
+        }
+
+        this.segments = segments;
+        this.chapters = chapters;
+        this.renderContent();
+        this.renderTOC();
+      }
+
+      renderContent() {
+        const contentDiv = this.content;
+        let html = '';
+
+        this.segments.forEach((segment, index) => {
+          html += `
+            <p class="paragraph" data-start="${segment.start}" data-end="${segment.end}" data-index="${index}">
+              ${segment.text.trim()}
+            </p>
+          `;
+        });
+
+        contentDiv.innerHTML = html;
+
+        // Add click handlers for paragraphs
+        contentDiv.querySelectorAll('.paragraph').forEach(p => {
+          p.addEventListener('click', () => {
+            const start = parseFloat(p.dataset.start);
+            this.audio.currentTime = start + this.syncOffset;
+            if (this.audio.paused) {
+              this.audio.play();
+            }
+          });
+        });
+      }
+
+      renderTOC() {
+        if (!this.tocList) return;
+
+        let html = '';
+        Object.values(this.chapters).forEach(chapter => {
+          const firstSegment = chapter.segments[0];
+          if (firstSegment) {
+            html += `
+              <li>
+                <a href="#" onclick="app.jumpToTime(${firstSegment.start}); return false;">
+                  ${chapter.title}
+                </a>
+              </li>
+            `;
+          }
+        });
+
+        this.tocList.innerHTML = html;
+      }
+
+      jumpToTime(time) {
+        this.audio.currentTime = time + this.syncOffset;
+        if (this.audio.paused) {
+          this.audio.play();
+        }
+      }
     }
 
     // Global functions for navigation
