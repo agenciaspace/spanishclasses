@@ -1,12 +1,72 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// API para listar livros disponíveis
+app.get('/api/books', (req, res) => {
+  try {
+    const audioDir = path.join(__dirname, 'public', 'audio');
+    const audioFiles = fs.readdirSync(audioDir)
+      .filter(file => file.endsWith('.mp3') || file.endsWith('.m4a'))
+      .map(file => {
+        const stats = fs.statSync(path.join(audioDir, file));
+        const fileNameWithoutExt = path.parse(file).name;
+        
+        // Mapear informações específicas dos livros
+        const bookInfo = getBookInfo(fileNameWithoutExt);
+        
+        return {
+          id: fileNameWithoutExt.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+          title: bookInfo.title,
+          author: bookInfo.author,
+          audioFile: file,
+          duration: bookInfo.duration,
+          chapters: bookInfo.chapters,
+          language: bookInfo.language,
+          narrator: bookInfo.narrator,
+          description: bookInfo.description,
+          fileSize: Math.round(stats.size / (1024 * 1024)) + ' MB'
+        };
+      });
+    
+    res.json(audioFiles);
+  } catch (error) {
+    console.error('Error listing books:', error);
+    res.status(500).json({ error: 'Failed to list books' });
+  }
+});
+
+function getBookInfo(fileName) {
+  const bookDatabase = {
+    'el-principito': {
+      title: 'El Principito',
+      author: 'Antoine de Saint-Exupéry',
+      duration: '01:42:30',
+      chapters: 27,
+      language: 'Español',
+      narrator: 'Adolfo Ruiz',
+      description: 'Un clásico universal sobre la amistad, el amor y la búsqueda del sentido de la vida.'
+    }
+  };
+  
+  return bookDatabase[fileName] || {
+    title: fileName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    author: 'Autor Desconocido',
+    duration: 'N/A',
+    chapters: 'N/A',
+    language: 'Español',
+    narrator: 'N/A',
+    description: 'Audiolivro em espanhol com tradução interativa.'
+  };
+}
 
 app.post('/translate', async (req, res) => {
   try {
