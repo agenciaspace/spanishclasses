@@ -67,6 +67,44 @@
       color: #666;
     }
 
+    .sync-controls {
+      text-align: center;
+      margin-top: 15px;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      border-left: 4px solid #ffc107;
+    }
+
+    .sync-controls label {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #856404;
+    }
+
+    .sync-controls button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin: 0 2px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .sync-controls button:hover {
+      background: #764ba2;
+    }
+
+    .sync-controls span {
+      display: inline-block;
+      margin: 0 10px;
+      font-weight: bold;
+      color: #856404;
+      min-width: 40px;
+    }
+
     .toc {
       background: #f8f9fa;
       padding: 20px;
@@ -257,6 +295,16 @@
       <div class="controls-help">
         Usa las teclas ← → para navegar • Espacio para pausar/reproducir • Clica en el texto para ir a ese momento
       </div>
+      
+      <div class="sync-controls">
+        <label>⚙️ Ajuste de sincronización:</label>
+        <button onclick="app.adjustSync(-5)">-5s</button>
+        <button onclick="app.adjustSync(-1)">-1s</button>
+        <span id="syncOffset">0s</span>
+        <button onclick="app.adjustSync(1)">+1s</button>
+        <button onclick="app.adjustSync(5)">+5s</button>
+        <button onclick="app.resetSync()">Reset</button>
+      </div>
     </div>
 
     <div class="toc">
@@ -279,6 +327,7 @@
         this.tocList = document.getElementById('tocList');
         this.progressFill = document.getElementById('progressFill');
         this.currentTranslationPopup = null;
+        this.syncOffset = 0; // Offset em segundos para ajustar sincronização
         
         this.initializeAudio();
         this.loadBookContent();
@@ -306,19 +355,49 @@
 
       highlightCurrentLine() {
         const lines = document.querySelectorAll('.line[data-start]');
-        const currentTime = this.audio.currentTime;
+        const adjustedTime = this.audio.currentTime + this.syncOffset;
+        
+        // Encontrar a linha mais próxima do tempo atual (ajustado)
+        let closestLine = null;
+        let closestDistance = Infinity;
         
         lines.forEach(line => {
           const start = parseFloat(line.dataset.start);
           const end = parseFloat(line.dataset.end);
           
-          if (currentTime >= start && currentTime <= end) {
-            line.classList.add('highlight');
-            line.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else {
-            line.classList.remove('highlight');
+          // Remover highlight de todas as linhas primeiro
+          line.classList.remove('highlight');
+          
+          // Calcular distância do tempo atual para o início da linha
+          const distance = Math.abs(adjustedTime - start);
+          
+          // Se estamos dentro do intervalo OU é a linha mais próxima
+          if ((adjustedTime >= start && adjustedTime <= end) || distance < closestDistance) {
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestLine = line;
+            }
           }
         });
+        
+        // Destacar a linha mais próxima
+        if (closestLine && closestDistance < 30) { // Tolerância de 30 segundos
+          closestLine.classList.add('highlight');
+          closestLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      adjustSync(seconds) {
+        this.syncOffset += seconds;
+        document.getElementById('syncOffset').textContent = this.syncOffset + 's';
+        // Forçar atualização da sincronização
+        this.highlightCurrentLine();
+      }
+
+      resetSync() {
+        this.syncOffset = 0;
+        document.getElementById('syncOffset').textContent = '0s';
+        this.highlightCurrentLine();
       }
 
       setupKeyboardControls() {
@@ -411,10 +490,21 @@
         }
       }
 
-      loadBookContent() {
-        // Por enquanto vamos criar o conteúdo manualmente
-        // Depois você pode usar o script Python para gerar automaticamente
-        this.createManualContent();
+      async loadBookContent() {
+        try {
+          // Tentar carregar transcrição real primeiro
+          const response = await fetch('/transcriptions/el-principito.json');
+          if (response.ok) {
+            const transcription = await response.json();
+            this.createContentFromTranscription(transcription);
+          } else {
+            // Fallback para conteúdo manual se a transcrição não estiver disponível
+            this.createManualContent();
+          }
+        } catch (error) {
+          console.log('Usando conteúdo manual:', error);
+          this.createManualContent();
+        }
       }
 
       createManualContent() {
@@ -675,6 +765,58 @@
         // Generate content
         let contentHTML = '';
         chapters.forEach(chapter => {
+          contentHTML += `
+            <div class="chapter" id="${chapter.id}">
+              <h2>${chapter.title}</h2>
+          `;
+          
+          chapter.paragraphs.forEach(para => {
+            contentHTML += `
+              <p class="line" data-start="${para.start}" data-end="${para.end}" onclick="app.seekToTime(${para.start})">
+                ${this.addWordTranslations(para.text)}
+              </p>
+            `;
+          });
+          
+          contentHTML += '</div>';
+        });
+
+        this.content.innerHTML = contentHTML;
+      }
+
+      createContentFromTranscription(transcription) {
+        const segments = transcription.segments;
+        const chapters = {};
+        let currentChapter = null;
+
+        // Agrupar segmentos por capítulos
+        segments.forEach(segment => {
+          if (segment.text.startsWith('Capítulo')) {
+            currentChapter = {
+              id: segment.text.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+              title: segment.text,
+              paragraphs: []
+            };
+            chapters[currentChapter.id] = currentChapter;
+          } else if (currentChapter) {
+            currentChapter.paragraphs.push({
+              text: segment.text,
+              start: segment.start,
+              end: segment.end
+            });
+          }
+        });
+
+        // Gerar TOC
+        let tocHTML = '';
+        Object.values(chapters).forEach(chapter => {
+          tocHTML += `<li><a href="#${chapter.id}" onclick="app.scrollToChapter('${chapter.id}')">${chapter.title}</a></li>`;
+        });
+        this.tocList.innerHTML = tocHTML;
+
+        // Gerar conteúdo
+        let contentHTML = '';
+        Object.values(chapters).forEach(chapter => {
           contentHTML += `
             <div class="chapter" id="${chapter.id}">
               <h2>${chapter.title}</h2>

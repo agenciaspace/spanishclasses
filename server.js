@@ -9,6 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/transcriptions', express.static('transcriptions'));
 
 // API para listar livros disponíveis
 app.get('/api/books', (req, res) => {
