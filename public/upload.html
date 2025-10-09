@@ -1,325 +1,301 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload de Audiolivros - Biblioteca Interativa</title>
+  <title>Upload de Audiolivros</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
-    body {
-      font-family: 'Georgia', serif;
-      line-height: 1.8;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #000;
+      color: #fff;
       min-height: 100vh;
-      color: #333;
+      overflow-x: hidden;
     }
-
-    /* Global Navigation */
-    .global-nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 15px 0;
-      position: sticky;
+    
+    /* Header minimalista */
+    header {
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 40px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       z-index: 1000;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-
-    .nav-container {
-      max-width: 1200px;
+    
+    .header-content {
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
     }
-
-    .nav-logo {
-      color: white;
-      font-size: 1.5em;
-      font-weight: bold;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-search {
-      flex: 1;
-      max-width: 400px;
-      margin: 0 30px;
-      position: relative;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 12px 45px 12px 15px;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      background: rgba(255,255,255,0.9);
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
-    }
-
-    .search-button {
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      padding: 8px;
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: -0.5px;
       cursor: pointer;
-      color: #666;
-      font-size: 1.1em;
+      transition: opacity 0.3s;
     }
-
+    
+    .logo:hover {
+      opacity: 0.7;
+    }
+    
     .nav-links {
       display: flex;
-      gap: 20px;
+      gap: 30px;
       align-items: center;
     }
-
+    
     .nav-link {
-      color: white;
+      color: rgba(255,255,255,0.7);
       text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      transition: all 0.3s ease;
-      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.3s;
     }
-
+    
     .nav-link:hover {
-      background: rgba(255,255,255,0.2);
+      color: #fff;
     }
-
+    
     .nav-link.active {
-      background: rgba(255,255,255,0.3);
+      color: #fff;
     }
-
-    .container {
+    
+    /* Main content */
+    main {
+      padding: 120px 40px 40px;
       max-width: 800px;
       margin: 0 auto;
-      background: white;
-      min-height: 80vh;
-      box-shadow: 0 0 50px rgba(0,0,0,0.3);
-      margin-top: 20px;
-      margin-bottom: 20px;
-      border-radius: 20px;
-      overflow: hidden;
     }
-
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 40px;
-      text-align: center;
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 200;
+      margin-bottom: 60px;
+      letter-spacing: -1px;
+      opacity: 0;
+      animation: fadeInUp 0.8s forwards;
     }
-
-    .header h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
-
-    .header p {
-      font-size: 1.2em;
-      opacity: 0.9;
-    }
-
+    
+    /* Upload section */
     .upload-section {
-      padding: 40px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 60px;
+      opacity: 0;
+      animation: fadeInUp 0.8s 0.2s forwards;
     }
-
+    
     .upload-area {
-      border: 3px dashed #667eea;
-      border-radius: 20px;
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 12px;
       padding: 60px 40px;
       text-align: center;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
       cursor: pointer;
       margin-bottom: 30px;
     }
-
+    
     .upload-area:hover {
-      background: #f8f9fa;
-      border-color: #764ba2;
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(255,255,255,0.3);
     }
-
+    
     .upload-area.dragover {
-      background: #e3f2fd;
-      border-color: #2196f3;
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.4);
     }
-
+    
     .upload-icon {
-      font-size: 4em;
-      color: #667eea;
+      font-size: 3rem;
+      color: rgba(255,255,255,0.6);
       margin-bottom: 20px;
     }
-
+    
     .upload-text {
-      font-size: 1.3em;
-      color: #666;
-      margin-bottom: 15px;
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 10px;
     }
-
+    
     .upload-hint {
-      color: #999;
-      font-size: 0.9em;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.9rem;
     }
-
+    
     .file-input {
       display: none;
     }
-
+    
     .btn {
       display: inline-block;
-      padding: 12px 30px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      padding: 12px 24px;
+      background: transparent;
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      font-size: 0.9rem;
       text-decoration: none;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s;
       margin: 5px;
       cursor: pointer;
     }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    
+    .btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.4);
     }
-
-    .btn.secondary {
-      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-      box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+    
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
-
-    .btn.secondary:hover {
-      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5);
+    
+    .btn.primary {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.3);
     }
-
+    
     .file-list {
       margin-top: 30px;
     }
-
+    
+    .file-list h3 {
+      font-size: 1.25rem;
+      font-weight: 300;
+      margin-bottom: 20px;
+      color: rgba(255,255,255,0.9);
+    }
+    
     .file-item {
-      background: #f8f9fa;
-      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
       padding: 20px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
+    
     .file-info {
       flex: 1;
     }
-
+    
     .file-name {
-      font-weight: bold;
-      color: #333;
+      font-weight: 400;
+      color: rgba(255,255,255,0.9);
       margin-bottom: 5px;
     }
-
+    
     .file-size {
-      color: #666;
-      font-size: 0.9em;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.85rem;
     }
-
+    
     .file-status {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
     }
-
+    
     .status-badge {
       padding: 4px 12px;
-      border-radius: 15px;
-      font-size: 0.8em;
-      font-weight: bold;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
     }
-
+    
     .status-pending {
-      background: #fff3cd;
-      color: #856404;
+      background: rgba(255,193,7,0.15);
+      color: rgba(255,193,7,0.9);
     }
-
+    
+    .status-uploading,
     .status-processing {
-      background: #d1ecf1;
-      color: #0c5460;
+      background: rgba(13,202,240,0.15);
+      color: rgba(13,202,240,0.9);
     }
-
+    
     .status-complete {
-      background: #d4edda;
-      color: #155724;
+      background: rgba(25,135,84,0.15);
+      color: rgba(25,135,84,0.9);
     }
-
+    
     .status-error {
-      background: #f8d7da;
-      color: #721c24;
+      background: rgba(220,53,69,0.15);
+      color: rgba(220,53,69,0.9);
     }
-
+    
     .progress-bar {
       width: 100px;
-      height: 8px;
-      background: #e9ecef;
-      border-radius: 4px;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
       overflow: hidden;
     }
-
+    
     .progress-fill {
       height: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 4px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 3px;
       transition: width 0.3s ease;
     }
-
+    
+    /* Animações */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Responsive */
     @media (max-width: 768px) {
-      .nav-container {
+      header {
+        padding: 15px 20px;
+      }
+      
+      .header-content {
         flex-direction: column;
         gap: 15px;
       }
       
-      .nav-search {
-        margin: 0;
-        max-width: 100%;
-        order: 2;
-      }
-      
       .nav-links {
-        order: 3;
+        gap: 20px;
         flex-wrap: wrap;
         justify-content: center;
       }
       
-      .container {
-        margin: 10px;
-        margin-top: 20px;
+      main {
+        padding: 100px 20px 40px;
       }
       
-      .header {
-        padding: 30px 20px;
-      }
-      
-      .header h1 {
-        font-size: 2em;
+      .page-title {
+        font-size: 2rem;
+        margin-bottom: 40px;
       }
       
       .upload-section {
-        padding: 20px;
+        padding: 30px 20px;
       }
       
       .upload-area {
@@ -331,38 +307,46 @@
         align-items: flex-start;
         gap: 15px;
       }
+      
+      .file-status {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    
+    /* Dark scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.15);
     }
   </style>
 </head>
 <body>
-  <!-- Global Navigation -->
-  <nav class="global-nav">
-    <div class="nav-container">
-      <a href="/" class="nav-logo">
-        📚 Biblioteca Interativa
-      </a>
-      
-      <div class="nav-search">
-        <input type="text" class="search-input" placeholder="Buscar livros, autores..." id="globalSearch">
-        <button class="search-button" type="button">
-          🔍
-        </button>
-      </div>
-      
+  <header>
+    <div class="header-content">
+      <div class="logo">Audiobooks</div>
       <div class="nav-links">
         <a href="/" class="nav-link">📚 Biblioteca</a>
-        <a href="#" class="nav-link active">📤 Upload</a>
-        <a href="#" class="nav-link" onclick="showAdmin()">⚙️ Admin</a>
+        <a href="/upload.html" class="nav-link active">📤 Upload</a>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <div class="container">
-    <div class="header">
-      <h1>📤 Upload de Audiolivros</h1>
-      <p>Adicione novos audiolivros à sua biblioteca</p>
-    </div>
-
+  <main>
+    <h1 class="page-title">Upload de Audiolivros</h1>
+    
     <div class="upload-section">
       <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
         <div class="upload-icon">🎧</div>
@@ -373,10 +357,10 @@
       <input type="file" id="fileInput" class="file-input" multiple accept=".mp3,.m4a,.wav" onchange="handleFiles(this.files)">
       
       <div style="text-align: center; margin-bottom: 30px;">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">
+        <button class="btn primary" onclick="document.getElementById('fileInput').click()">
           📁 Selecionar Arquivos
         </button>
-        <button class="btn secondary" onclick="startProcessing()" id="processBtn" disabled>
+        <button class="btn" onclick="startProcessing()" id="processBtn" disabled>
           🚀 Iniciar Processamento
         </button>
       </div>
@@ -386,7 +370,7 @@
         <div id="fileItems"></div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
     let selectedFiles = [];
@@ -407,17 +391,6 @@
       e.preventDefault();
       uploadArea.classList.remove('dragover');
       handleFiles(e.dataTransfer.files);
-    });
-
-    // Setup global search
-    document.getElementById('globalSearch').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const query = e.target.value.trim();
-        if (query) {
-          window.location.href = `/?search=${encodeURIComponent(query)}`;
-        }
-      }
     });
 
     function handleFiles(files) {
@@ -456,12 +429,12 @@
             <span class="status-badge status-${item.status}">
               ${getStatusText(item.status)}
             </span>
-            ${item.status === 'processing' ? `
+            ${item.status === 'processing' || item.status === 'uploading' ? `
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
               </div>
             ` : ''}
-            <button onclick="removeFile('${item.id}')" class="btn secondary" style="padding: 5px 10px; font-size: 0.8em;">
+            <button onclick="removeFile('${item.id}')" class="btn" style="padding: 5px 10px; font-size: 0.8em;">
               🗑️
             </button>
           </div>
@@ -550,10 +523,6 @@
         item.status = 'error';
         renderFileList();
       }
-    }
-
-    function showAdmin() {
-      alert('Painel de administração será implementado em breve!');
     }
   </script>
 </body>

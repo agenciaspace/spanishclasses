@@ -13,8 +13,31 @@ class WordByWordReader {
     this.wordTimings = [];
     this.scrollPaused = false;
     this.chapters = [];
+    this.syncActive = false;
     
     this.initializeReader();
+  }
+
+  addSyncIndicator() {
+    if (!document.getElementById('syncIndicator')) {
+      const indicator = document.createElement('div');
+      indicator.id = 'syncIndicator';
+      indicator.className = 'sync-indicator';
+      indicator.innerHTML = 'Sincronização Ativa';
+      document.body.appendChild(indicator);
+    }
+  }
+
+  updateSyncIndicator(active) {
+    const indicator = document.getElementById('syncIndicator');
+    if (indicator) {
+      if (active) {
+        indicator.classList.add('active');
+        indicator.innerHTML = 'Sincronização Ativa';
+      } else {
+        indicator.classList.remove('active');
+      }
+    }
   }
 
   async initializeReader() {
@@ -51,6 +74,9 @@ class WordByWordReader {
       console.error('Book page container not found');
       return;
     }
+
+    // Adicionar indicador de sincronização
+    this.addSyncIndicator();
 
     let html = '';
     let globalWordIndex = 0;
@@ -193,17 +219,29 @@ class WordByWordReader {
         console.error('Audio error:', e, this.audio.error);
       });
       
+      // Sincronização mais precisa com throttling
+      let lastUpdateTime = 0;
       this.audio.addEventListener('timeupdate', () => {
-        this.updateCurrentWord();
-        this.updateCurrentChapter();
+        const now = Date.now();
+        // Atualizar no máximo 10 vezes por segundo para melhor performance
+        if (now - lastUpdateTime > 100) {
+          this.updateCurrentWord();
+          this.updateCurrentChapter();
+          lastUpdateTime = now;
+        }
       });
 
       this.audio.addEventListener('play', () => {
         this.isPlaying = true;
+        this.syncActive = true;
+        this.updateSyncIndicator(true);
+        console.log('✅ Sincronização ativada');
       });
 
       this.audio.addEventListener('pause', () => {
         this.isPlaying = false;
+        this.syncActive = false;
+        this.updateSyncIndicator(false);
       });
 
       this.audio.addEventListener('ended', () => {
@@ -252,35 +290,37 @@ class WordByWordReader {
 
     const currentTime = this.audio.currentTime;
     
-    // Encontrar palavra atual baseada no tempo
+    // Encontrar palavra atual baseada no tempo com melhor precisão
     let targetWordIndex = -1;
+    let closestWordIndex = -1;
+    let minTimeDiff = Infinity;
     
     for (let i = 0; i < this.words.length; i++) {
       const word = this.words[i];
+      
+      // Palavra exata para o tempo atual
       if (currentTime >= word.start && currentTime <= word.end) {
         targetWordIndex = i;
         break;
       }
-      // Se passou do tempo da palavra, é a próxima
-      if (currentTime > word.end && i < this.words.length - 1) {
-        const nextWord = this.words[i + 1];
-        if (currentTime < nextWord.start) {
-          targetWordIndex = i;
-          break;
-        }
+      
+      // Encontrar palavra mais próxima como backup
+      const timeDiff = Math.abs(currentTime - word.start);
+      if (timeDiff < minTimeDiff) {
+        minTimeDiff = timeDiff;
+        closestWordIndex = i;
       }
     }
 
-    // Se não encontrou palavra exata, usar aproximação
-    if (targetWordIndex === -1) {
-      for (let i = 0; i < this.words.length - 1; i++) {
-        if (currentTime >= this.words[i].start && currentTime < this.words[i + 1].start) {
-          targetWordIndex = i;
-          break;
-        }
+    // Se não encontrou palavra exata, usar a mais próxima
+    if (targetWordIndex === -1 && closestWordIndex !== -1) {
+      // Só usar a palavra mais próxima se estiver dentro de 2 segundos
+      if (minTimeDiff < 2) {
+        targetWordIndex = closestWordIndex;
       }
     }
 
+    // Atualizar highlight se mudou de palavra
     if (targetWordIndex !== -1 && targetWordIndex !== this.currentWordIndex) {
       this.highlightWord(targetWordIndex);
       this.updateCurrentChapter();
@@ -288,22 +328,38 @@ class WordByWordReader {
   }
 
   highlightWord(wordIndex) {
-    // Remover highlight anterior
-    const previousWord = document.querySelector('.word.current');
-    if (previousWord) {
-      previousWord.classList.remove('current');
-      previousWord.classList.add('read');
-    }
+    // Remover highlight anterior e marcar palavras anteriores como lidas
+    document.querySelectorAll('.word').forEach((word, idx) => {
+      const wordIdx = parseInt(word.dataset.index);
+      if (wordIdx < wordIndex) {
+        word.classList.remove('current');
+        word.classList.add('read');
+      } else if (wordIdx === wordIndex) {
+        word.classList.add('current');
+        word.classList.remove('read');
+      } else {
+        word.classList.remove('current', 'read');
+      }
+    });
 
     // Destacar palavra atual
     const currentWordElement = document.getElementById(`word-${wordIndex}`);
     if (currentWordElement) {
-      currentWordElement.classList.add('current');
-      currentWordElement.classList.remove('read');
+      // Adicionar animação suave ao highlight
+      currentWordElement.style.transition = 'all 0.3s ease';
       
-      // Scroll suave para a palavra se não estiver pausado
-      if (!this.scrollPaused) {
-        this.scrollToWord(currentWordElement);
+      // Scroll suave e inteligente para a palavra se não estiver pausado
+      if (!this.scrollPaused && this.isPlaying) {
+        this.smartScrollToWord(currentWordElement);
+      }
+      
+      // Marcar parágrafo atual
+      document.querySelectorAll('.text-paragraph').forEach(p => {
+        p.classList.remove('current-paragraph');
+      });
+      const currentParagraph = currentWordElement.closest('.text-paragraph');
+      if (currentParagraph) {
+        currentParagraph.classList.add('current-paragraph');
       }
     }
 
@@ -311,26 +367,60 @@ class WordByWordReader {
   }
 
   scrollToWord(wordElement) {
-    const wordPage = parseInt(wordElement.dataset.page);
-    const currentSpread = this.getCurrentSpread();
-    
-    // Verificar se a palavra está na página/spread atual
-    if (!this.isWordOnCurrentSpread(wordPage)) {
-      this.goToSpreadWithPage(wordPage);
-      return;
-    }
-    
-    // Verificar se a palavra está visível na área atual
+    // Scroll contínuo sem limitação de páginas
     const rect = wordElement.getBoundingClientRect();
     const windowHeight = window.innerHeight;
+    const headerHeight = 80;
     
     // Se a palavra estiver fora da área visível, fazer scroll suave
-    if (rect.top < windowHeight * 0.2 || rect.bottom > windowHeight * 0.8) {
-      wordElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'nearest'
+    if (rect.top < headerHeight + 50 || rect.bottom > windowHeight - 100) {
+      // Posicionar palavra no terço superior da tela
+      const targetPosition = windowHeight * 0.3;
+      const currentScroll = window.pageYOffset;
+      const elementTop = rect.top + currentScroll;
+      const newScroll = elementTop - targetPosition;
+      
+      window.scrollTo({
+        top: newScroll,
+        behavior: 'smooth'
       });
+    }
+  }
+
+  smartScrollToWord(wordElement) {
+    const rect = wordElement.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const headerHeight = 80; // Altura aproximada do header
+    const margin = 100; // Margem de segurança
+    
+    // Calcular posição ideal (1/3 da tela)
+    const idealPosition = windowHeight * 0.33;
+    
+    // Só fazer scroll se a palavra estiver fora da zona de leitura confortável
+    if (rect.top < headerHeight + margin || rect.top > windowHeight - margin * 2) {
+      // Calcular o offset para centralizar a palavra na posição ideal
+      const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      const elementTop = rect.top + currentScroll;
+      const targetScroll = elementTop - idealPosition;
+      
+      // Scroll suave com controle de velocidade
+      window.scrollTo({
+        top: targetScroll,
+        behavior: 'smooth'
+      });
+    }
+    
+    // Verificar se chegou ao final do documento e continuar scrolling
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollBottom = window.pageYOffset + windowHeight;
+    
+    // Se estiver próximo ao final (90% do documento), continuar scrolling automático
+    if (scrollBottom > documentHeight * 0.9 && this.isPlaying) {
+      // Adicionar mais conteúdo ou continuar com scroll suave
+      const nextParagraph = wordElement.closest('.text-paragraph').nextElementSibling;
+      if (nextParagraph) {
+        nextParagraph.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
@@ -806,7 +896,52 @@ let wordReader;
 
 function initializeWordByWordReader() {
   if (!wordReader) {
+    console.log('📚 Initializing Word-by-Word Reader...');
     wordReader = new WordByWordReader();
+    
+    // Adicionar função para testar sincronização
+    window.testSync = function() {
+      if (wordReader && wordReader.audio) {
+        console.log('🎵 Testing synchronization...');
+        console.log('Current time:', wordReader.audio.currentTime);
+        console.log('Current word index:', wordReader.currentWordIndex);
+        console.log('Total words:', wordReader.words.length);
+        
+        // Forçar atualização
+        wordReader.updateCurrentWord();
+        
+        const currentWord = document.querySelector('.word.current');
+        if (currentWord) {
+          console.log('✅ Current word highlighted:', currentWord.textContent);
+        } else {
+          console.log('⚠️ No word currently highlighted');
+        }
+      } else {
+        console.log('❌ Reader not initialized');
+      }
+    };
+    
+    // Adicionar listener para garantir sincronização quando áudio carrega
+    const checkAudioReady = setInterval(() => {
+      const audio = document.getElementById('audioPlayer');
+      if (audio && audio.readyState >= 2) {
+        clearInterval(checkAudioReady);
+        console.log('✅ Audio ready, sync enabled');
+        
+        // Garantir que o evento timeupdate está funcionando
+        if (!audio.ontimeupdate) {
+          let lastUpdateTime = 0;
+          audio.addEventListener('timeupdate', () => {
+            const now = Date.now();
+            if (now - lastUpdateTime > 100) {
+              wordReader.updateCurrentWord();
+              wordReader.updateCurrentChapter();
+              lastUpdateTime = now;
+            }
+          });
+        }
+      }
+    }, 500);
   }
   
   // Disponibilizar globalmente

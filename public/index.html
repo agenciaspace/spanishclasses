@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca de Audiolivros Interativos</title>
+  <title>Audiobooks</title>
   <style>
     * {
       margin: 0;
@@ -12,718 +12,365 @@
     }
     
     body { 
-      font-family: Georgia, serif; 
-      line-height: 1.8;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #000;
+      color: #fff;
       min-height: 100vh;
-      color: #333;
+      overflow-x: hidden;
     }
     
-    .container {
-      max-width: 1200px;
+    /* Header minimalista */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 40px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .header-content {
+      max-width: 1400px;
       margin: 0 auto;
-      background: white;
-      min-height: 100vh;
-      box-shadow: 0 0 50px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     
-    .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 40px;
-      text-align: center;
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+      transition: opacity 0.3s;
     }
     
-    .header h1 { 
-      font-size: 3em;
-      margin-bottom: 10px;
+    .logo:hover {
+      opacity: 0.7;
     }
     
-    .header p {
-      font-size: 1.3em;
-      opacity: 0.9;
+    .search-container {
+      position: relative;
+      width: 300px;
     }
     
-    .main-content {
-      padding: 40px;
+    .search-input {
+      width: 100%;
+      padding: 10px 40px 10px 15px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      transition: all 0.3s;
     }
     
-    .books-section {
-      margin-bottom: 50px;
+    .search-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
     }
     
-    .section-title {
-      font-size: 2em;
-      color: #333;
-      margin-bottom: 30px;
-      text-align: center;
-      border-bottom: 3px solid #667eea;
-      padding-bottom: 15px;
+    .search-input::placeholder {
+      color: rgba(255,255,255,0.3);
     }
     
+    .search-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    
+    /* Main content */
+    main {
+      padding: 120px 40px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 200;
+      margin-bottom: 60px;
+      letter-spacing: -1px;
+      opacity: 0;
+      animation: fadeInUp 0.8s forwards;
+    }
+    
+    /* Grid de livros */
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 30px;
-      margin-top: 40px;
+      opacity: 0;
+      animation: fadeInUp 0.8s 0.2s forwards;
     }
     
     .book-card {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      border-radius: 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
       padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      border: 1px solid #dee2e6;
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .book-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent, rgba(255,255,255,0.03));
+      opacity: 0;
+      transition: opacity 0.4s;
     }
     
     .book-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
     }
     
-    .book-cover {
-      width: 80px;
-      height: 120px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 10px;
-      margin: 0 auto 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2em;
-      color: white;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    .book-card:hover::before {
+      opacity: 1;
+    }
+    
+    .book-icon {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      opacity: 0.8;
     }
     
     .book-title {
-      font-size: 1.5em;
-      color: #333;
-      margin-bottom: 10px;
-      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
     }
     
     .book-author {
-      color: #666;
-      text-align: center;
-      margin-bottom: 15px;
-      font-style: italic;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
     }
     
-    .book-info {
-      margin: 20px 0;
-    }
-    
-    .book-info div {
+    .book-meta {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 0.9em;
-    }
-    
-    .book-info .label {
-      color: #666;
-    }
-    
-    .book-info .value {
-      color: #333;
-      font-weight: 500;
-    }
-    
-    .book-actions {
-      text-align: center;
-      margin-top: 25px;
-    }
-    
-    .btn {
-      display: inline-block;
-      padding: 12px 30px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      text-decoration: none;
-      border-radius: 25px;
-      font-size: 1em;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-      margin: 5px;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-    }
-    
-    .btn.secondary {
-      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-      box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
-    }
-    
-    .btn.secondary:hover {
-      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5);
-    }
-
-    .btn.favorited {
-      background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
-      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
-    }
-
-    .btn.favorited:hover {
-      box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
-    }
-    
-    .features {
-      background: #f8f9fa;
-      padding: 40px;
-      border-radius: 20px;
-      margin: 40px 0;
-    }
-    
-    .features h2 {
-      color: #444;
-      margin-bottom: 25px;
-      text-align: center;
-    }
-    
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 25px;
     }
     
-    .feature-item {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    .book-action {
+      display: inline-block;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      text-align: center;
+      width: 100%;
     }
     
-    .feature-icon {
-      font-size: 2em;
-      margin-bottom: 10px;
+    .book-action:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
     }
     
+    /* Animações */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Loading state */
     .loading {
       text-align: center;
-      padding: 40px;
-      color: #666;
+      padding: 60px;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.9rem;
     }
     
-    .footer {
-      background: #f8f9fa;
-      text-align: center;
-      padding: 30px;
-      color: #666;
-      font-size: 0.9em;
-      border-top: 1px solid #dee2e6;
-    }
-    
-    /* Global Navigation */
-    .global-nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 15px 0;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-    }
-
-    .nav-logo {
-      color: white;
-      font-size: 1.5em;
-      font-weight: bold;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-search {
-      flex: 1;
-      max-width: 400px;
-      margin: 0 30px;
-      position: relative;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 12px 45px 12px 15px;
-      border: none;
-      border-radius: 25px;
-      font-size: 1em;
-      background: rgba(255,255,255,0.9);
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
-    }
-
-    .search-button {
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      padding: 8px;
-      cursor: pointer;
-      color: #666;
-      font-size: 1.1em;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .nav-link {
-      color: white;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      transition: all 0.3s ease;
-      font-weight: 500;
-    }
-
-    .nav-link:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .nav-link.active {
-      background: rgba(255,255,255,0.3);
-    }
-
-    /* Processing Indicator */
-    .processing-indicator {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,193,7,0.9);
-      color: #856404;
-      padding: 5px 12px;
-      border-radius: 15px;
-      font-size: 0.9em;
-      font-weight: 500;
-    }
-
-    .processing-indicator.active {
-      display: flex;
-    }
-
-    .processing-spinner {
-      width: 12px;
-      height: 12px;
-      border: 2px solid transparent;
-      border-top: 2px solid #856404;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Quick Search Results */
-    .search-results {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      max-height: 300px;
-      overflow-y: auto;
-      z-index: 1001;
-      display: none;
-    }
-
-    .search-results.show {
-      display: block;
-    }
-
-    .search-result-item {
-      padding: 12px 15px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .search-result-item:hover {
-      background: #f8f9fa;
-    }
-
-    .search-result-item:last-child {
-      border-bottom: none;
-    }
-
-    .search-result-title {
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 4px;
-    }
-
-    .search-result-author {
-      color: #666;
-      font-size: 0.9em;
-    }
-
+    /* Responsive */
     @media (max-width: 768px) {
-      .nav-container {
+      header {
+        padding: 15px 20px;
+      }
+      
+      .header-content {
         flex-direction: column;
         gap: 15px;
       }
       
-      .nav-search {
-        margin: 0;
-        max-width: 100%;
-        order: 2;
+      .search-container {
+        width: 100%;
       }
       
-      .nav-links {
-        order: 3;
-        flex-wrap: wrap;
-        justify-content: center;
+      main {
+        padding: 100px 20px 40px;
       }
       
-      .header {
-        padding: 30px 20px;
-      }
-      
-      .header h1 {
-        font-size: 2.5em;
-      }
-      
-      .main-content {
-        padding: 20px;
+      .page-title {
+        font-size: 2rem;
+        margin-bottom: 40px;
       }
       
       .books-grid {
         grid-template-columns: 1fr;
         gap: 20px;
       }
-      
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
+    }
+    
+    /* Dark scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.15);
     }
   </style>
 </head>
 <body>
-  <!-- Global Navigation -->
-  <nav class="global-nav">
-    <div class="nav-container">
-      <a href="/" class="nav-logo">
-        📚 Biblioteca Interativa
-      </a>
-      
-      <div class="nav-search">
-        <input type="text" class="search-input" placeholder="Buscar livros, autores..." id="globalSearch">
-        <button class="search-button" type="button">
-          🔍
-        </button>
-        <div class="search-results" id="searchResults"></div>
-      </div>
-      
-      <div class="nav-links">
-        <div class="processing-indicator" id="processingIndicator">
-          <div class="processing-spinner"></div>
-          <span>Processando...</span>
-        </div>
-        <a href="/" class="nav-link active">📚 Biblioteca</a>
-        <a href="#" class="nav-link" onclick="showFavorites()">⭐ Favoritos</a>
-        <a href="/upload.html" class="nav-link">📤 Upload</a>
+  <header>
+    <div class="header-content">
+      <div class="logo">Audiobooks</div>
+      <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search..." id="searchInput">
+        <span class="search-icon">🔍</span>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <div class="container">
-    <div class="header">
-      <h1>📚 Biblioteca Interativa</h1>
-      <p>Audiolivros em Espanhol com Tradução e Sincronização</p>
+  <main>
+    <h1 class="page-title">Library</h1>
+    
+    <div class="books-grid" id="booksGrid">
+      <div class="loading">Loading...</div>
     </div>
-
-    <div class="main-content">
-      <div class="books-section">
-        <h2 class="section-title">📖 Livros Disponíveis</h2>
-        
-        <div class="books-grid" id="booksGrid">
-          <div class="loading">Carregando livros disponíveis...</div>
-        </div>
-      </div>
-
-      <div class="features">
-        <h2>✨ Recursos dos Audiolivros Interativos</h2>
-        <div class="features-grid">
-          <div class="feature-item">
-            <div class="feature-icon">🎧</div>
-            <h3>Sincronização Áudio-Texto</h3>
-            <p>Texto destacado automaticamente conforme o áudio</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🌍</div>
-            <h3>Tradução Instantânea</h3>
-            <p>Selecione qualquer texto para tradução automática</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">⌨️</div>
-            <h3>Controles de Teclado</h3>
-            <p>Navegue com espaço, setas e atalhos personalizados</p>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">📑</div>
-            <h3>Navegação por Capítulos</h3>
-            <p>Pule facilmente entre diferentes seções do livro</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <p>Powered by DeepL API | Audiolivros © Seus respectivos autores</p>
-    </div>
-  </div>
+  </main>
 
   <script>
-    class BookManager {
+    class MinimalBookManager {
       constructor() {
         this.booksGrid = document.getElementById('booksGrid');
+        this.searchInput = document.getElementById('searchInput');
         this.books = [];
-        this.favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        this.searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-        this.loadAvailableBooks();
-        this.setupGlobalSearch();
-        this.checkProcessingStatus();
+        this.init();
       }
 
-      async loadAvailableBooks() {
+      async init() {
+        await this.loadBooks();
+        this.setupSearch();
+      }
+
+      async loadBooks() {
         try {
           const response = await fetch('/api/books');
           if (response.ok) {
             const books = await response.json();
             this.books = books;
-            this.displayBooks(books);
+            this.renderBooks(books);
           } else {
-            this.displayDefaultBooks();
+            this.loadDefaultBooks();
           }
         } catch (error) {
-          console.log('Using default book list');
-          this.displayDefaultBooks();
+          this.loadDefaultBooks();
         }
       }
 
-      displayDefaultBooks() {
+      loadDefaultBooks() {
         const books = [
           {
             id: 'el-principito',
             title: 'El Principito',
             author: 'Antoine de Saint-Exupéry',
-            audioFile: 'el-principito.mp3',
-            duration: '01:42:30',
-            chapters: 27,
-            language: 'Español',
-            narrator: 'Adolfo Ruiz',
-            description: 'Un clásico universal sobre la amistad, el amor y la búsqueda del sentido de la vida.'
+            duration: '1h 42m',
+            chapters: 27
           }
         ];
         
         this.books = books;
-        this.displayBooks(books);
+        this.renderBooks(books);
       }
 
-      // displayBooks method moved to global scope
-
-      formatDuration(seconds) {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
-      }
-
-      setupGlobalSearch() {
-        const searchInput = document.getElementById('globalSearch');
-        const searchResults = document.getElementById('searchResults');
-        
-        searchInput.addEventListener('input', (e) => {
-          const query = e.target.value.trim();
-          if (query.length > 1) {
-            this.performSearch(query);
-          } else {
-            searchResults.classList.remove('show');
-          }
-        });
-
-        // Hide results when clicking outside
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.nav-search')) {
-            searchResults.classList.remove('show');
-          }
-        });
-
-        // Handle Enter key
-        searchInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const query = e.target.value.trim();
-            if (query) {
-              this.addToSearchHistory(query);
-              this.filterBooks(query);
-              searchResults.classList.remove('show');
-            }
-          }
-        });
-      }
-
-      performSearch(query) {
-        const searchResults = document.getElementById('searchResults');
-        const results = this.books.filter(book => 
-          book.title.toLowerCase().includes(query.toLowerCase()) ||
-          book.author.toLowerCase().includes(query.toLowerCase()) ||
-          (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
-        );
-
-        if (results.length > 0) {
-          searchResults.innerHTML = results.map(book => `
-            <div class="search-result-item" onclick="window.location.href='/book.html?book=${book.id}'">
-              <div class="search-result-title">${book.title}</div>
-              <div class="search-result-author">por ${book.author}</div>
-            </div>
-          `).join('');
-          searchResults.classList.add('show');
-        } else {
-          searchResults.innerHTML = '<div class="search-result-item">Nenhum livro encontrado</div>';
-          searchResults.classList.add('show');
-        }
-      }
-
-      addToSearchHistory(query) {
-        if (!this.searchHistory.includes(query)) {
-          this.searchHistory.unshift(query);
-          if (this.searchHistory.length > 10) {
-            this.searchHistory = this.searchHistory.slice(0, 10);
-          }
-          localStorage.setItem('searchHistory', JSON.stringify(this.searchHistory));
-        }
-      }
-
-      filterBooks(query) {
-        const filteredBooks = this.books.filter(book => 
-          book.title.toLowerCase().includes(query.toLowerCase()) ||
-          book.author.toLowerCase().includes(query.toLowerCase()) ||
-          (book.description && book.description.toLowerCase().includes(query.toLowerCase()))
-        );
-        this.displayBooks(filteredBooks);
-      }
-
-      checkProcessingStatus() {
-        const indicator = document.getElementById('processingIndicator');
-        
-        // Check if there's any processing happening
-        fetch('/transcriptions/el-principito.json')
-          .then(response => {
-            if (!response.ok) {
-              // Still processing
-              indicator.classList.add('active');
-              // Check again in 10 seconds
-              setTimeout(() => this.checkProcessingStatus(), 10000);
-            } else {
-              indicator.classList.remove('active');
-            }
-          })
-          .catch(() => {
-            // Assume still processing
-            indicator.classList.add('active');
-            setTimeout(() => this.checkProcessingStatus(), 10000);
-          });
-      }
-
-      displayBooks(books) {
-        this.books = books; // Store books for search
-        
+      renderBooks(books) {
         if (books.length === 0) {
-          this.booksGrid.innerHTML = '<div class="loading">Nenhum livro disponível</div>';
+          this.booksGrid.innerHTML = '<div class="loading">No books available</div>';
           return;
         }
 
         this.booksGrid.innerHTML = books.map(book => `
-          <div class="book-card">
-            <div class="book-cover">📖</div>
+          <div class="book-card" onclick="window.location.href='/book.html?book=${book.id}'">
+            <div class="book-icon">📚</div>
             <h3 class="book-title">${book.title}</h3>
-            <p class="book-author">por ${book.author}</p>
-            
-            <div class="book-info">
-              <div>
-                <span class="label">Duração:</span>
-                <span class="value">${book.duration || 'N/A'}</span>
-              </div>
-              <div>
-                <span class="label">Capítulos:</span>
-                <span class="value">${book.chapters || 'N/A'}</span>
-              </div>
-              <div>
-                <span class="label">Idioma:</span>
-                <span class="value">${book.language || 'Español'}</span>
-              </div>
-              <div>
-                <span class="label">Narrador:</span>
-                <span class="value">${book.narrator || 'N/A'}</span>
-              </div>
+            <p class="book-author">${book.author}</p>
+            <div class="book-meta">
+              <span>${book.duration}</span>
+              <span>${book.chapters} chapters</span>
             </div>
-            
-            ${book.description ? `<p style="color: #666; font-size: 0.9em; margin: 15px 0;">${book.description}</p>` : ''}
-            
-            <div class="book-actions">
-              <a href="/book.html?book=${book.id}" class="btn">📖 Ler Livro</a>
-              <a href="/audio/${book.audioFile}" class="btn secondary" target="_blank">🎧 Só Áudio</a>
-              <button onclick="toggleFavorite('${book.id}')" class="btn ${this.favorites.includes(book.id) ? 'favorited' : 'secondary'}">
-                ${this.favorites.includes(book.id) ? '⭐' : '☆'} Favorito
-              </button>
-            </div>
+            <a href="/book.html?book=${book.id}" class="book-action">Listen</a>
           </div>
         `).join('');
       }
-    }
 
-    // Global functions
-    function toggleFavorite(bookId) {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      const index = favorites.indexOf(bookId);
-      
-      if (index > -1) {
-        favorites.splice(index, 1);
-      } else {
-        favorites.push(bookId);
+      setupSearch() {
+        let searchTimeout;
+        this.searchInput.addEventListener('input', (e) => {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            this.filterBooks(e.target.value);
+          }, 300);
+        });
       }
-      
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-      bookManager.favorites = favorites;
-      bookManager.displayBooks(bookManager.books);
+
+      filterBooks(query) {
+        if (!query.trim()) {
+          this.renderBooks(this.books);
+          return;
+        }
+
+        const filtered = this.books.filter(book => 
+          book.title.toLowerCase().includes(query.toLowerCase()) ||
+          book.author.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        this.renderBooks(filtered);
+      }
     }
 
-    function showFavorites() {
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      const favoriteBooks = bookManager.books.filter(book => favorites.includes(book.id));
-      bookManager.displayBooks(favoriteBooks);
-    }
-
-    function showUpload() {
-      alert('Funcionalidade de upload será implementada em breve!');
-    }
-
-    // Initialize the book manager
-    const bookManager = new BookManager();
+    // Initialize
+    new MinimalBookManager();
   </script>
 </body>
 </html>
