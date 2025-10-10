@@ -579,21 +579,102 @@ class WordByWordReader {
       }
     });
 
-    // Event listener para cliques nas palavras
+    // Event listener para cliques e seleções de palavras
     const bookPageContainer = document.querySelector('.book-page-container');
     if (bookPageContainer) {
-      bookPageContainer.addEventListener('click', (event) => {
-        const wordElement = event.target.closest('.word');
-        if (wordElement && wordElement.id) {
-          const wordIndex = parseInt(wordElement.dataset.index);
-          if (!isNaN(wordIndex)) {
-            this.jumpToWord(wordIndex);
-            this.savePosition(wordElement.id);
+      bookPageContainer.addEventListener('mouseup', (event) => {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+
+        if (selectedText.length > 0) {
+          // Caso 1: Múltiplas palavras selecionadas
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          if (rect.width > 0) { // Apenas traduzir se a seleção for válida
+            this.handleWordTranslation(selectedText, rect);
+          }
+        } else {
+          // Caso 2: Apenas um clique em uma única palavra
+          const wordElement = event.target.closest('.word');
+          if (wordElement && wordElement.id) {
+            const wordIndex = parseInt(wordElement.dataset.index);
+            if (!isNaN(wordIndex)) {
+              this.jumpToWord(wordIndex);
+              this.savePosition(wordElement.id);
+
+              const wordText = wordElement.textContent.trim();
+              const rect = wordElement.getBoundingClientRect();
+              this.handleWordTranslation(wordText, rect);
+            }
           }
         }
       });
     }
   }
+
+  async handleWordTranslation(text, rect) {
+    this.removeTranslationPopup(); // Remove qualquer popup existente
+    const translation = await this.getTranslation(text);
+    this.showTranslationPopup(text, translation, rect);
+  }
+
+  async getTranslation(text) {
+    try {
+      const response = await fetch('/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) {
+        return 'Erro ao traduzir.';
+      }
+      const data = await response.json();
+      return data.translations[0].text;
+    } catch (error) {
+      console.error('Translation fetch error:', error);
+      return 'Não foi possível conectar ao serviço de tradução.';
+    }
+  }
+
+  showTranslationPopup(original, translated, rect) {
+    this.removeTranslationPopup(); // Garantir que não haja popups duplicados
+
+    const popup = document.createElement('div');
+    popup.className = 'translation-popup';
+    popup.id = 'translationPopup';
+    popup.innerHTML = `
+      <div class="translation-text">${translated}</div>
+      <div class="translation-original">${original}</div>
+    `;
+    document.body.appendChild(popup);
+
+    // Posicionar o popup perto do texto selecionado
+    popup.style.left = `${window.scrollX + rect.left + rect.width / 2 - popup.offsetWidth / 2}px`;
+    popup.style.top = `${window.scrollY + rect.top - popup.offsetHeight - 10}px`;
+
+    // Fechar popup ao clicar fora
+    setTimeout(() => {
+      document.addEventListener('click', this.closePopupHandler, { once: true });
+    }, 100);
+  }
+
+  removeTranslationPopup() {
+    const existingPopup = document.getElementById('translationPopup');
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+    document.removeEventListener('click', this.closePopupHandler);
+  }
+
+  // Handler para fechar o popup, garantindo que o próprio popup não se feche ao ser clicado
+  closePopupHandler = (event) => {
+    const popup = document.getElementById('translationPopup');
+    if (popup && !popup.contains(event.target)) {
+      this.removeTranslationPopup();
+    }
+  };
 
   savePosition(wordId) {
     if (wordId) {

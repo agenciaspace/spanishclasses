@@ -86,13 +86,15 @@ app.post('/translate', async (req, res) => {
     try {
       const response = await axios.post(
         'https://api-free.deepl.com/v2/translate',
-        new URLSearchParams({
-          auth_key: process.env.DEEPL_API_KEY,
-          text,
-          target_lang: 'EN'
-        }).toString(),
-        { 
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        {
+          text: [text], // O texto deve ser um array
+          target_lang: 'PT-BR'
+        },
+        {
+          headers: {
+            'Authorization': `DeepL-Auth-Key ${process.env.DEEPL_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
           timeout: 5000
         }
       );
@@ -101,6 +103,12 @@ app.post('/translate', async (req, res) => {
       res.json(response.data);
     } catch (deeplError) {
       console.log('DeepL API failed, using fallback translation');
+      // Log detalhado do erro
+      if (deeplError.response) {
+        console.error('DeepL Error Details:', deeplError.response.data);
+      } else {
+        console.error('DeepL Error Details:', deeplError.message);
+      }
       const translation = await fallbackTranslation(text);
       res.json({
         translations: [{ text: translation }]
