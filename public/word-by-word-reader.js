@@ -14,6 +14,7 @@ class WordByWordReader {
     this.scrollPaused = false;
     this.chapters = [];
     this.syncActive = false;
+    this.initialSeekTime = null; // Para guardar o tempo de seek inicial
     
     this.initializeReader();
   }
@@ -46,6 +47,7 @@ class WordByWordReader {
     await this.loadTranscription();
     this.setupAudioControls();
     this.bindEvents();
+    this.loadLastPosition(); // Carregar última posição salva
     console.log('Reader initialization completed');
   }
 
@@ -162,8 +164,7 @@ class WordByWordReader {
                      id="${wordId}" 
                      data-start="${wordStartTime}" 
                      data-end="${wordEndTime}"
-                     data-index="${globalWordIndex}"
-                     onclick="wordReader.jumpToWord(${globalWordIndex})">${word}</span> `;
+                     data-index="${globalWordIndex}">${word}</span> `;
           
           this.words.push({
             text: word,
@@ -210,9 +211,14 @@ class WordByWordReader {
     console.log('Audio element found:', this.audio);
     
     if (this.audio) {
-      // Event listeners para tracking de audio
+      // Event listener para pular para o tempo certo quando o áudio carregar
       this.audio.addEventListener('loadedmetadata', () => {
         console.log('Audio loaded, duration:', Math.round(this.audio.duration / 60), 'minutes');
+        if (this.initialSeekTime) {
+          console.log(`Seeking to initial time: ${this.initialSeekTime}s`);
+          this.audio.currentTime = this.initialSeekTime;
+          this.initialSeekTime = null; // Usar apenas uma vez
+        }
       });
       
       this.audio.addEventListener('error', (e) => {
@@ -322,39 +328,30 @@ class WordByWordReader {
 
     // Atualizar highlight se mudou de palavra
     if (targetWordIndex !== -1 && targetWordIndex !== this.currentWordIndex) {
-      this.highlightWord(targetWordIndex);
+      this.highlightWord(targetWordIndex, false);
       this.updateCurrentChapter();
     }
   }
 
-  highlightWord(wordIndex) {
-    // Remover highlight anterior e marcar palavras anteriores como lidas
-    document.querySelectorAll('.word').forEach((word, idx) => {
-      const wordIdx = parseInt(word.dataset.index);
-      if (wordIdx < wordIndex) {
-        word.classList.remove('current');
-        word.classList.add('read');
-      } else if (wordIdx === wordIndex) {
-        word.classList.add('current');
-        word.classList.remove('read');
-      } else {
-        word.classList.remove('current', 'read');
-      }
+  highlightWord(wordIndex, isManualSelection) {
+    // Remover highlight anterior
+    document.querySelectorAll('.word.current, .word.highlight').forEach(word => {
+      word.classList.remove('current', 'highlight');
     });
 
-    // Destacar palavra atual
     const currentWordElement = document.getElementById(`word-${wordIndex}`);
     if (currentWordElement) {
-      // Adicionar animação suave ao highlight
-      currentWordElement.style.transition = 'all 0.3s ease';
-      
-      // Scroll suave e inteligente para a palavra se não estiver pausado
-      if (!this.scrollPaused && this.isPlaying) {
+      // Se for seleção manual (clique) ou ao carregar a página, usar a classe 'highlight'
+      // Se for durante a reprodução do áudio, usar a classe 'current'
+      const className = (isManualSelection || !this.isPlaying) ? 'highlight' : 'current';
+      currentWordElement.classList.add(className);
+
+      if (this.isPlaying && !this.scrollPaused) {
         this.smartScrollToWord(currentWordElement);
       }
       
       // Marcar parágrafo atual
-      document.querySelectorAll('.text-paragraph').forEach(p => {
+      document.querySelectorAll('.text-paragraph.current-paragraph').forEach(p => {
         p.classList.remove('current-paragraph');
       });
       const currentParagraph = currentWordElement.closest('.text-paragraph');
@@ -521,8 +518,13 @@ class WordByWordReader {
     if (wordIndex >= 0 && wordIndex < this.words.length) {
       const word = this.words[wordIndex];
       if (this.audio) {
-        this.audio.currentTime = word.start;
-        this.highlightWord(wordIndex);
+        // Se o áudio já estiver carregado, pule para o tempo. Senão, guarde para mais tarde.
+        if (this.audio.readyState >= 2) { // HAVE_CURRENT_DATA
+          this.audio.currentTime = word.start;
+        } else {
+          this.initialSeekTime = word.start;
+        }
+        this.highlightWord(wordIndex, true);
       }
     }
   }
@@ -576,6 +578,45 @@ class WordByWordReader {
           break;
       }
     });
+
+    // Event listener para cliques nas palavras
+    const bookPageContainer = document.querySelector('.book-page-container');
+    if (bookPageContainer) {
+      bookPageContainer.addEventListener('click', (event) => {
+        const wordElement = event.target.closest('.word');
+        if (wordElement && wordElement.id) {
+          const wordIndex = parseInt(wordElement.dataset.index);
+          if (!isNaN(wordIndex)) {
+            this.jumpToWord(wordIndex);
+            this.savePosition(wordElement.id);
+          }
+        }
+      });
+    }
+  }
+
+  savePosition(wordId) {
+    if (wordId) {
+      localStorage.setItem('lastReadWordId', wordId);
+      console.log(`Posição salva: ${wordId}`);
+    }
+  }
+
+  loadLastPosition() {
+    const lastReadWordId = localStorage.getItem('lastReadWordId');
+    if (lastReadWordId) {
+      console.log(`Carregando última posição: ${lastReadWordId}`);
+      const lastWordElement = document.getElementById(lastReadWordId);
+      if (lastWordElement) {
+        const wordIndex = parseInt(lastWordElement.dataset.index);
+        if (!isNaN(wordIndex)) {
+          // Chamar jumpToWord para preparar o tempo do áudio e destacar
+          this.jumpToWord(wordIndex);
+          // Rolar para a palavra de forma suave
+          lastWordElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
   }
 
   jumpToPreviousWord() {
@@ -1075,12 +1116,3 @@ window.toggleFloatingMenu = toggleFloatingMenu;
 window.showFloatingMenu = showFloatingMenu;
 window.closeFloatingMenu = closeFloatingMenu;
 window.jumpToChapter = jumpToChapter;
-
-// Inicializar quando o DOM estiver pronto
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initializeWordByWordReader, 1500);
-  });
-} else {
-  setTimeout(initializeWordByWordReader, 1500);
-}

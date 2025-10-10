@@ -182,12 +182,8 @@
       document.getElementById('bookHeader').style.display = 'flex';
       document.querySelector('.page-navigation').style.display = 'flex';
       
-      // Inicializar o leitor após mostrar o conteúdo
-      setTimeout(() => {
-        if (!window.wordReader) {
-          initializeWordByWordReader();
-        }
-      }, 500);
+      // Inicializa o leitor de forma direta e limpa
+      initializeWordByWordReader();
     }
   </script>
 </body>
